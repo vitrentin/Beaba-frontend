@@ -12,3 +12,13 @@
     npm install @types/styled-components -D
 
 ```
+
+## Implementações futuras, caso necessário
+
+### Context Selectors
+
+```sh
+    npm install use-context-selector schedular
+```
+
+Caso a aplicação precise, utilizar: useCallback()

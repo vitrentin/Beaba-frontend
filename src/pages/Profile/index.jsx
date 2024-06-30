@@ -10,11 +10,14 @@ import editar from "../../assets/Editar.svg";
 import excluir from "../../assets/Deletar.svg";
 import { EditProfileModal } from "../../components/EditProfileModal";
 import { DeleteProfileModal } from "../../components/DeleteProfileModal";
+import { SearchProfileForm } from "../../components/SearchProfileForm";
 import * as Dialog from "@radix-ui/react-dialog";
 
 const PROFILES_PER_PAGE = 5;
 
 export function Profile() {
+  document.title = `Gestão de perfis`;
+
   const [isFormOpen, setIsFormOpen] = useState(false);
   const modalRef = useRef(null);
 
@@ -29,11 +32,11 @@ export function Profile() {
   }, [isFormOpen]);
 
   const [nome_perfil, setNomePerfil] = useState("");
-  // eslint-disable-next-line no-unused-vars
   const [nome_modulo, setNomeModulo] = useState("");
 
   const [profiles, setProfiles] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
+  const [searchResults, setSearchResults] = useState([]);
 
   function handleSignUp() {
     if (!nome_perfil) {
@@ -45,29 +48,31 @@ export function Profile() {
       return alert("Token não encontrado. Faça login novamente.");
     }
 
-    const profileData = { nome_perfil };
+    const profileData = { nome_perfil, nome_modulo: nome_modulo || undefined };
     console.log("Enviando dados:", profileData);
 
     api
-      .post("/profiles", profileData, {
+      .post("/profile", profileData, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       })
       .then(() => {
-        alert("Perfil cadastrado com sucesso!");
+        alert("Perfil cadastrado e/ou módulo associado com sucesso!");
         fetchProfiles();
-        setNomePerfil("");
         setNomeModulo("");
       })
       .catch((error) => {
         if (error.response) {
           console.error("Erro na resposta do servidor:", error.response.data);
-          alert(error.response.data.message || "Erro ao cadastrar perfil");
+          alert(
+            error.response.data.message ||
+              "Erro ao cadastrar perfil e/ou associar módulo"
+          );
         } else {
           console.error("Erro na requisição:", error.message);
-          alert("Não foi possível cadastrar");
+          alert("Não foi possível cadastrar e/ou associar");
         }
       });
   }
@@ -116,6 +121,10 @@ export function Profile() {
       );
     });
   };
+  const handleSearchResults = (results) => {
+    setSearchResults(results);
+  };
+
   return (
     <Container>
       <Navigation title="Gestão de perfis" />
@@ -155,6 +164,10 @@ export function Profile() {
         )}
 
         <h4>Perfis existentes:</h4>
+        <SearchProfileForm
+          onSearchResults={handleSearchResults}
+          fetchProfiles={fetchProfiles}
+        />
         <div className="tabela">
           <table>
             <thead>
@@ -166,40 +179,79 @@ export function Profile() {
               </tr>
             </thead>
             <tbody>
-              {currentPageProfiles.map((profile) => (
-                <tr key={profile.id_perfil}>
-                  <td>{profile.nome_perfil}</td>
-                  <td>{profile.nome_modulo}</td>
-                  <td>
-                    <Dialog.Root>
-                      <Dialog.Trigger asChild>
-                        <button>
-                          <img src={editar} alt="Editar" />
-                          Editar
-                        </button>
-                      </Dialog.Trigger>
-                      <EditProfileModal
-                        profile={profile}
-                        onEdit={handleEditProfile}
-                      />
-                    </Dialog.Root>
-                  </td>
-                  <td>
-                    <Dialog.Root>
-                      <Dialog.Trigger asChild>
-                        <button>
-                          <img src={excluir} alt="Excluir" />
-                          Excluir
-                        </button>
-                      </Dialog.Trigger>
-                      <DeleteProfileModal
-                        profile={profile}
-                        onDelete={handleDeleteProfile}
-                      />
-                    </Dialog.Root>
-                  </td>
-                </tr>
-              ))}
+              {searchResults.length > 0
+                ? searchResults.map((profile) => (
+                    <tr key={profile.id_perfil}>
+                      <td>{profile.nome_perfil}</td>
+                      <td>
+                        {profile.perfil_modulo
+                          .map((modulo) => modulo.modulo.nome_modulo)
+                          .join(", ")}
+                      </td>
+                      <td>
+                        <Dialog.Root>
+                          <Dialog.Trigger asChild>
+                            <button>
+                              <img src={editar} alt="Editar" />
+                              Editar
+                            </button>
+                          </Dialog.Trigger>
+                          <EditProfileModal
+                            profile={profile}
+                            onEdit={handleEditProfile}
+                          />
+                        </Dialog.Root>
+                      </td>
+                      <td>
+                        <Dialog.Root>
+                          <Dialog.Trigger asChild>
+                            <button>
+                              <img src={excluir} alt="Excluir" />
+                              Excluir
+                            </button>
+                          </Dialog.Trigger>
+                          <DeleteProfileModal
+                            profile={profile}
+                            onDelete={handleDeleteProfile}
+                          />
+                        </Dialog.Root>
+                      </td>
+                    </tr>
+                  ))
+                : currentPageProfiles.map((profile) => (
+                    <tr key={profile.id_perfil}>
+                      <td>{profile.nome_perfil}</td>
+                      <td>{profile.modules}</td>
+                      <td>
+                        <Dialog.Root>
+                          <Dialog.Trigger asChild>
+                            <button>
+                              <img src={editar} alt="Editar" />
+                              Editar
+                            </button>
+                          </Dialog.Trigger>
+                          <EditProfileModal
+                            profile={profile}
+                            onEdit={handleEditProfile}
+                          />
+                        </Dialog.Root>
+                      </td>
+                      <td>
+                        <Dialog.Root>
+                          <Dialog.Trigger asChild>
+                            <button>
+                              <img src={excluir} alt="Excluir" />
+                              Excluir
+                            </button>
+                          </Dialog.Trigger>
+                          <DeleteProfileModal
+                            profile={profile}
+                            onDelete={handleDeleteProfile}
+                          />
+                        </Dialog.Root>
+                      </td>
+                    </tr>
+                  ))}
             </tbody>
           </table>
         </div>

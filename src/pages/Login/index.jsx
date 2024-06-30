@@ -9,6 +9,7 @@ import { Container, Form } from "./styles";
 import Logo from "../../assets/verdeCardImage.svg";
 import { EsqueciMinhaSenha } from "../../components/EsqueciMinhaSenhaModal";
 import * as Dialog from "@radix-ui/react-dialog";
+document.title = `Login`;
 export function Login() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");

@@ -10,11 +10,14 @@ import editar from "../../assets/Editar.svg";
 import excluir from "../../assets/Deletar.svg";
 import { EditUserModal } from "../../components/EditUserModal";
 import { DeleteUserModal } from "../../components/DeleteUserModal";
+import { SearchUserForm } from "../../components/SearchUserForm";
 import * as Dialog from "@radix-ui/react-dialog";
 
 const USERS_PER_PAGE = 5;
 
 export function User() {
+  document.title = `Gestão de usuários`;
+
   const [isFormOpen, setIsFormOpen] = useState(false);
   const modalRef = useRef(null);
 
@@ -34,6 +37,7 @@ export function User() {
 
   const [users, setUsers] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
+  const [searchResults, setSearchResults] = useState([]);
 
   function handleSignUp() {
     if (!nome_usuario || !email || !senha) {
@@ -110,6 +114,10 @@ export function User() {
     );
   };
 
+  const handleSearchResults = (results) => {
+    setSearchResults(results);
+  };
+
   return (
     <Container>
       <Navigation title="Gestão de usuários" />
@@ -161,6 +169,11 @@ export function User() {
         )}
 
         <h4>Usuários existentes:</h4>
+        <SearchUserForm
+          onSearchResults={handleSearchResults}
+          fetchUsers={fetchUsers}
+        />
+
         <div className="tabela">
           <table>
             <thead>
@@ -172,37 +185,69 @@ export function User() {
               </tr>
             </thead>
             <tbody>
-              {currentPageUsers.map((user) => (
-                <tr key={user.id_usuario}>
-                  <td>{user.nome_usuario}</td>
-                  <td>{user.email}</td>
-                  <td>
-                    <Dialog.Root>
-                      <Dialog.Trigger asChild>
-                        <button>
-                          <img src={editar} alt="Editar" />
-                          Editar
-                        </button>
-                      </Dialog.Trigger>
-                      <EditUserModal user={user} onEdit={handleEditUser} />
-                    </Dialog.Root>
-                  </td>
-                  <td>
-                    <Dialog.Root>
-                      <Dialog.Trigger asChild>
-                        <button>
-                          <img src={excluir} alt="Excluir" />
-                          Excluir
-                        </button>
-                      </Dialog.Trigger>
-                      <DeleteUserModal
-                        user={user}
-                        onDelete={handleDeleteUser}
-                      />
-                    </Dialog.Root>
-                  </td>
-                </tr>
-              ))}
+              {searchResults.length > 0
+                ? searchResults.map((user) => (
+                    <tr key={user.id_usuario}>
+                      <td>{user.nome_usuario}</td>
+                      <td>{user.email}</td>
+                      <td>
+                        <Dialog.Root>
+                          <Dialog.Trigger asChild>
+                            <button>
+                              <img src={editar} alt="Editar" />
+                              Editar
+                            </button>
+                          </Dialog.Trigger>
+                          <EditUserModal user={user} onEdit={handleEditUser} />
+                        </Dialog.Root>
+                      </td>
+                      <td>
+                        <Dialog.Root>
+                          <Dialog.Trigger asChild>
+                            <button>
+                              <img src={excluir} alt="Excluir" />
+                              Excluir
+                            </button>
+                          </Dialog.Trigger>
+                          <DeleteUserModal
+                            user={user}
+                            onDelete={handleDeleteUser}
+                          />
+                        </Dialog.Root>
+                      </td>
+                    </tr>
+                  ))
+                : currentPageUsers.map((user) => (
+                    <tr key={user.id_usuario}>
+                      <td>{user.nome_usuario}</td>
+                      <td>{user.email}</td>
+                      <td>
+                        <Dialog.Root>
+                          <Dialog.Trigger asChild>
+                            <button>
+                              <img src={editar} alt="Editar" />
+                              Editar
+                            </button>
+                          </Dialog.Trigger>
+                          <EditUserModal user={user} onEdit={handleEditUser} />
+                        </Dialog.Root>
+                      </td>
+                      <td>
+                        <Dialog.Root>
+                          <Dialog.Trigger asChild>
+                            <button>
+                              <img src={excluir} alt="Excluir" />
+                              Excluir
+                            </button>
+                          </Dialog.Trigger>
+                          <DeleteUserModal
+                            user={user}
+                            onDelete={handleDeleteUser}
+                          />
+                        </Dialog.Root>
+                      </td>
+                    </tr>
+                  ))}
             </tbody>
           </table>
         </div>

@@ -10,11 +10,14 @@ import editar from "../../assets/Editar.svg";
 import excluir from "../../assets/Deletar.svg";
 import { EditModuleModal } from "../../components/EditModuleModal";
 import { DeleteModuleModal } from "../../components/DeleteModuleModal";
+import { SearchModuleForm } from "../../components/SearchModuleForm";
 import * as Dialog from "@radix-ui/react-dialog";
 
 const MODULES_PER_PAGE = 5;
 
 export function Module() {
+  document.title = `Gestão de módulos`;
+
   const [isFormOpen, setIsFormOpen] = useState(false);
   const modalRef = useRef(null);
 
@@ -33,6 +36,7 @@ export function Module() {
 
   const [modules, setModules] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
+  const [searchResults, setSearchResults] = useState([]);
 
   function handleSignUp() {
     if (!nome_modulo) {
@@ -108,6 +112,9 @@ export function Module() {
       )
     );
   };
+  const handleSearchResults = (results) => {
+    setSearchResults(results);
+  };
 
   return (
     <Container>
@@ -148,6 +155,10 @@ export function Module() {
         )}
 
         <h4>Módulos existentes:</h4>
+        <SearchModuleForm
+          onSearchResults={handleSearchResults}
+          fetchModules={fetchModules}
+        />
         <div className="tabela">
           <table>
             <thead>
@@ -159,40 +170,75 @@ export function Module() {
               </tr>
             </thead>
             <tbody>
-              {currentPageModules.map((module) => (
-                <tr key={module.id_modulo}>
-                  <td>{module.nome_modulo}</td>
-                  <td>{module.descricao_modulo}</td>
-                  <td>
-                    <Dialog.Root>
-                      <Dialog.Trigger asChild>
-                        <button>
-                          <img src={editar} alt="Editar" />
-                          Editar
-                        </button>
-                      </Dialog.Trigger>
-                      <EditModuleModal
-                        module={module}
-                        onEdit={handleEditModule}
-                      />
-                    </Dialog.Root>
-                  </td>
-                  <td>
-                    <Dialog.Root>
-                      <Dialog.Trigger asChild>
-                        <button>
-                          <img src={excluir} alt="Excluir" />
-                          Excluir
-                        </button>
-                      </Dialog.Trigger>
-                      <DeleteModuleModal
-                        module={module}
-                        onDelete={handleDeleteModule}
-                      />
-                    </Dialog.Root>
-                  </td>
-                </tr>
-              ))}
+              {searchResults.length > 0
+                ? searchResults.map((module) => (
+                    <tr key={module.id_modulo}>
+                      <td>{module.nome_modulo}</td>
+                      <td>{module.descricao_modulo}</td>
+                      <td>
+                        <Dialog.Root>
+                          <Dialog.Trigger asChild>
+                            <button>
+                              <img src={editar} alt="Editar" />
+                              Editar
+                            </button>
+                          </Dialog.Trigger>
+                          <EditModuleModal
+                            module={module}
+                            onEdit={handleEditModule}
+                          />
+                        </Dialog.Root>
+                      </td>
+                      <td>
+                        <Dialog.Root>
+                          <Dialog.Trigger asChild>
+                            <button>
+                              <img src={excluir} alt="Excluir" />
+                              Excluir
+                            </button>
+                          </Dialog.Trigger>
+                          <DeleteModuleModal
+                            module={module}
+                            onDelete={handleDeleteModule}
+                          />
+                        </Dialog.Root>
+                      </td>
+                    </tr>
+                  ))
+                : currentPageModules.map((module) => (
+                    <tr key={module.id_modulo}>
+                      <td>{module.nome_modulo}</td>
+                      <td>{module.descricao_modulo}</td>
+                      <td>
+                        <Dialog.Root>
+                          <Dialog.Trigger asChild>
+                            <button>
+                              <img src={editar} alt="Editar" />
+                              Editar
+                            </button>
+                          </Dialog.Trigger>
+                          <EditModuleModal
+                            module={module}
+                            onEdit={handleEditModule}
+                          />
+                        </Dialog.Root>
+                      </td>
+                      <td>
+                        <Dialog.Root>
+                          <Dialog.Trigger asChild>
+                            <button>
+                              <img src={excluir} alt="Excluir" />
+                              Excluir
+                            </button>
+                          </Dialog.Trigger>
+                          <DeleteModuleModal
+                            module={module}
+                            onDelete={handleDeleteModule}
+                          />
+                        </Dialog.Root>
+                      </td>
+                    </tr>
+                  ))}
             </tbody>
           </table>
         </div>

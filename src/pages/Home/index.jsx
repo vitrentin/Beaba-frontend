@@ -2,6 +2,8 @@ import { Button } from "../../components/Button";
 import { Header } from "../../components/Header";
 import { Container } from "./styles";
 export function Home() {
+  document.title = `Home`;
+
   return (
     <Container>
       <Header />

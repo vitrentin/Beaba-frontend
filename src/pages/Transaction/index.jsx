@@ -10,12 +10,14 @@ import editar from "../../assets/Editar.svg";
 import excluir from "../../assets/Deletar.svg";
 import { EditTransactionModal } from "../../components/EditTransactionModal";
 import { DeleteTransactionModal } from "../../components/DeleteTransactionModal";
-
+import { SearchTransactionForm } from "../../components/SearchTransactionForm";
 import * as Dialog from "@radix-ui/react-dialog";
 
 const TRANSACTIONS_PER_PAGE = 5;
 
 export function Transaction() {
+  document.title = `Gestão de transações`;
+
   const [isFormOpen, setIsFormOpen] = useState(false);
   const modalRef = useRef(null);
 
@@ -31,15 +33,15 @@ export function Transaction() {
 
   const [nome_transacao, setNomeTransacao] = useState("");
   const [descricao_transacao, setDescricaoTransacao] = useState("");
-  // eslint-disable-next-line no-unused-vars
   const [nome_modulo_associado, setNomeModuloAssociado] = useState("");
 
   const [transactions, setTransactions] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
+  const [searchResults, setSearchResults] = useState([]);
 
   function handleSignUp() {
     if (!nome_transacao) {
-      return alert("Preencha pelo menos o nome do módulo!");
+      return alert("Preencha pelo menos o nome da transação!");
     }
 
     const token = localStorage.getItem("@beaba:token");
@@ -47,11 +49,15 @@ export function Transaction() {
       return alert("Token não encontrado. Faça login novamente.");
     }
 
-    const transactionData = { nome_transacao, descricao_transacao };
+    const transactionData = {
+      nome_transacao,
+      descricao_transacao,
+      nome_modulo: nome_modulo_associado || undefined,
+    };
     console.log("Enviando dados:", transactionData);
 
     api
-      .post("/transactions", transactionData, {
+      .post("/transaction", transactionData, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -60,17 +66,20 @@ export function Transaction() {
       .then(() => {
         alert("Transação cadastrada com sucesso!");
         fetchTransactions();
-        setNomeTransacao("");
-        setDescricaoTransacao("");
+        // setNomeTransacao("");
+        // setDescricaoTransacao("");
         setNomeModuloAssociado("");
       })
       .catch((error) => {
         if (error.response) {
           console.error("Erro na resposta do servidor:", error.response.data);
-          alert(error.response.data.message || "Erro ao cadastrar transação");
+          alert(
+            error.response.data.message ||
+              "Erro ao cadastrar transação e/ou associar módulo"
+          );
         } else {
           console.error("Erro na requisição:", error.message);
-          alert("Não foi possível cadastrar");
+          alert("Não foi possível cadastrar e/ou associar");
         }
       });
   }
@@ -119,6 +128,9 @@ export function Transaction() {
           : transaction
       )
     );
+  };
+  const handleSearchResults = (results) => {
+    setSearchResults(results);
   };
 
   return (
@@ -169,6 +181,10 @@ export function Transaction() {
         )}
 
         <h4>Transações existentes:</h4>
+        <SearchTransactionForm
+          onSearchResults={handleSearchResults}
+          fetchTransactions={fetchTransactions}
+        />
         <div className="tabela">
           <table>
             <thead>
@@ -181,41 +197,82 @@ export function Transaction() {
               </tr>
             </thead>
             <tbody>
-              {currentPageTransactions.map((transaction) => (
-                <tr key={transaction.id_transacao}>
-                  <td>{transaction.nome_transacao}</td>
-                  <td>{transaction.descricao_transacao}</td>
-                  <td>{transaction.nome_modulo_associado}</td>
-                  <td>
-                    <Dialog.Root>
-                      <Dialog.Trigger asChild>
-                        <button>
-                          <img src={editar} alt="Editar" />
-                          Editar
-                        </button>
-                      </Dialog.Trigger>
-                      <EditTransactionModal
-                        transaction={transaction}
-                        onEdit={handleEditTransaction}
-                      />
-                    </Dialog.Root>
-                  </td>
-                  <td>
-                    <Dialog.Root>
-                      <Dialog.Trigger asChild>
-                        <button>
-                          <img src={excluir} alt="Excluir" />
-                          Excluir
-                        </button>
-                      </Dialog.Trigger>
-                      <DeleteTransactionModal
-                        transaction={transaction}
-                        onDelete={handleDeleteTransaction}
-                      />
-                    </Dialog.Root>
-                  </td>
-                </tr>
-              ))}
+              {searchResults.length > 0
+                ? searchResults.map((transaction) => (
+                    <tr key={transaction.id_transacao}>
+                      <td>{transaction.nome_transacao}</td>
+                      <td>{transaction.descricao_transacao}</td>
+
+                      <td>
+                        {transaction.transacao_modulo
+                          .map((modulo) => modulo.modulo.nome_modulo)
+                          .join(", ")}
+                      </td>
+                      <td>
+                        <Dialog.Root>
+                          <Dialog.Trigger asChild>
+                            <button>
+                              <img src={editar} alt="Editar" />
+                              Editar
+                            </button>
+                          </Dialog.Trigger>
+                          <EditTransactionModal
+                            transaction={transaction}
+                            onEdit={handleEditTransaction}
+                          />
+                        </Dialog.Root>
+                      </td>
+                      <td>
+                        <Dialog.Root>
+                          <Dialog.Trigger asChild>
+                            <button>
+                              <img src={excluir} alt="Excluir" />
+                              Excluir
+                            </button>
+                          </Dialog.Trigger>
+                          <DeleteTransactionModal
+                            transaction={transaction}
+                            onDelete={handleDeleteTransaction}
+                          />
+                        </Dialog.Root>
+                      </td>
+                    </tr>
+                  ))
+                : currentPageTransactions.map((transaction) => (
+                    <tr key={transaction.id_transacao}>
+                      <td>{transaction.nome_transacao}</td>
+                      <td>{transaction.descricao_transacao}</td>
+                      <td>{transaction.modules}</td>
+                      <td>
+                        <Dialog.Root>
+                          <Dialog.Trigger asChild>
+                            <button>
+                              <img src={editar} alt="Editar" />
+                              Editar
+                            </button>
+                          </Dialog.Trigger>
+                          <EditTransactionModal
+                            transaction={transaction}
+                            onEdit={handleEditTransaction}
+                          />
+                        </Dialog.Root>
+                      </td>
+                      <td>
+                        <Dialog.Root>
+                          <Dialog.Trigger asChild>
+                            <button>
+                              <img src={excluir} alt="Excluir" />
+                              Excluir
+                            </button>
+                          </Dialog.Trigger>
+                          <DeleteTransactionModal
+                            transaction={transaction}
+                            onDelete={handleDeleteTransaction}
+                          />
+                        </Dialog.Root>
+                      </td>
+                    </tr>
+                  ))}
             </tbody>
           </table>
         </div>

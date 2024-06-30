@@ -10,11 +10,14 @@ import editar from "../../assets/Editar.svg";
 import excluir from "../../assets/Deletar.svg";
 import { EditFunctionModal } from "../../components/EditFunctionModal";
 import { DeleteFunctionModal } from "../../components/DeleteFunctionModal";
+import { SearchFunctionForm } from "../../components/SearchFunctionForm";
 import * as Dialog from "@radix-ui/react-dialog";
 
 const FUNCTIONS_PER_PAGE = 5;
 
 export function Function() {
+  document.title = `Gestão de funções`;
+
   const [isFormOpen, setIsFormOpen] = useState(false);
   const modalRef = useRef(null);
 
@@ -30,15 +33,15 @@ export function Function() {
 
   const [nome_funcao, setNomeFuncao] = useState("");
   const [descricao_funcao, setDescricaoFuncao] = useState("");
-  // eslint-disable-next-line no-unused-vars
   const [nome_modulo_associado, setNomeModuloAssociado] = useState("");
 
   const [functions, setFunctions] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
+  const [searchResults, setSearchResults] = useState([]);
 
   function handleSignUp() {
     if (!nome_funcao) {
-      return alert("Preencha pelo menos o nome do módulo!");
+      return alert("Preencha pelo menos o nome da função!");
     }
 
     const token = localStorage.getItem("@beaba:token");
@@ -46,30 +49,37 @@ export function Function() {
       return alert("Token não encontrado. Faça login novamente.");
     }
 
-    const functionData = { nome_funcao, descricao_funcao };
+    const functionData = {
+      nome_funcao,
+      descricao_funcao,
+      nome_modulo: nome_modulo_associado || undefined,
+    };
     console.log("Enviando dados:", functionData);
 
     api
-      .post("/functions", functionData, {
+      .post("/function", functionData, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       })
       .then(() => {
-        alert("Função cadastrada com sucesso!");
+        alert("Função cadastrada e/ou módulo associado com sucesso!");
         fetchFunctions();
-        setNomeFuncao("");
-        setDescricaoFuncao("");
+        // setNomeFuncao("");
+        // setDescricaoFuncao("");
         setNomeModuloAssociado("");
       })
       .catch((error) => {
         if (error.response) {
           console.error("Erro na resposta do servidor:", error.response.data);
-          alert(error.response.data.message || "Erro ao cadastrar função");
+          alert(
+            error.response.data.message ||
+              "Erro ao cadastrar função e/ou associar módulo"
+          );
         } else {
           console.error("Erro na requisição:", error.message);
-          alert("Não foi possível cadastrar");
+          alert("Não foi possível cadastrar e/ou associar");
         }
       });
   }
@@ -116,6 +126,9 @@ export function Function() {
           : functions
       )
     );
+  };
+  const handleSearchResults = (results) => {
+    setSearchResults(results);
   };
 
   return (
@@ -166,6 +179,10 @@ export function Function() {
         )}
 
         <h4>Funções existentes:</h4>
+        <SearchFunctionForm
+          onSearchResults={handleSearchResults}
+          fetchFunctions={fetchFunctions}
+        />
         <div className="tabela">
           <table>
             <thead>
@@ -178,41 +195,82 @@ export function Function() {
               </tr>
             </thead>
             <tbody>
-              {currentPageFunctions.map((functions) => (
-                <tr key={functions.id_funcao}>
-                  <td>{functions.nome_funcao}</td>
-                  <td>{functions.descricao_funcao}</td>
-                  <td>{functions.nome_modulo_associado}</td>
-                  <td>
-                    <Dialog.Root>
-                      <Dialog.Trigger asChild>
-                        <button>
-                          <img src={editar} alt="Editar" />
-                          Editar
-                        </button>
-                      </Dialog.Trigger>
-                      <EditFunctionModal
-                        functions={functions}
-                        onEdit={handleEditFunction}
-                      />
-                    </Dialog.Root>
-                  </td>
-                  <td>
-                    <Dialog.Root>
-                      <Dialog.Trigger asChild>
-                        <button>
-                          <img src={excluir} alt="Excluir" />
-                          Excluir
-                        </button>
-                      </Dialog.Trigger>
-                      <DeleteFunctionModal
-                        functions={functions}
-                        onDelete={handleDeleteFunction}
-                      />
-                    </Dialog.Root>
-                  </td>
-                </tr>
-              ))}
+              {searchResults.length > 0
+                ? searchResults.map((functions) => (
+                    <tr key={functions.id_funcao}>
+                      <td>{functions.nome_funcao}</td>
+                      <td>{functions.descricao_funcao}</td>
+
+                      <td>
+                        {functions.funcao_modulo
+                          .map((modulo) => modulo.modulo.nome_modulo)
+                          .join(", ")}
+                      </td>
+                      <td>
+                        <Dialog.Root>
+                          <Dialog.Trigger asChild>
+                            <button>
+                              <img src={editar} alt="Editar" />
+                              Editar
+                            </button>
+                          </Dialog.Trigger>
+                          <EditFunctionModal
+                            functions={functions}
+                            onEdit={handleEditFunction}
+                          />
+                        </Dialog.Root>
+                      </td>
+                      <td>
+                        <Dialog.Root>
+                          <Dialog.Trigger asChild>
+                            <button>
+                              <img src={excluir} alt="Excluir" />
+                              Excluir
+                            </button>
+                          </Dialog.Trigger>
+                          <DeleteFunctionModal
+                            functions={functions}
+                            onDelete={handleDeleteFunction}
+                          />
+                        </Dialog.Root>
+                      </td>
+                    </tr>
+                  ))
+                : currentPageFunctions.map((functions) => (
+                    <tr key={functions.id_funcao}>
+                      <td>{functions.nome_funcao}</td>
+                      <td>{functions.descricao_funcao}</td>
+                      <td>{functions.modules}</td>
+                      <td>
+                        <Dialog.Root>
+                          <Dialog.Trigger asChild>
+                            <button>
+                              <img src={editar} alt="Editar" />
+                              Editar
+                            </button>
+                          </Dialog.Trigger>
+                          <EditFunctionModal
+                            functions={functions}
+                            onEdit={handleEditFunction}
+                          />
+                        </Dialog.Root>
+                      </td>
+                      <td>
+                        <Dialog.Root>
+                          <Dialog.Trigger asChild>
+                            <button>
+                              <img src={excluir} alt="Excluir" />
+                              Excluir
+                            </button>
+                          </Dialog.Trigger>
+                          <DeleteFunctionModal
+                            functions={functions}
+                            onDelete={handleDeleteFunction}
+                          />
+                        </Dialog.Root>
+                      </td>
+                    </tr>
+                  ))}
             </tbody>
           </table>
         </div>
