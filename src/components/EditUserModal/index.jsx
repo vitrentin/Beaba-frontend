@@ -13,7 +13,7 @@ export function EditUserModal({ user, onEdit }) {
   const [email, setEmail] = useState(user.email);
   const [senha, setSenha] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-  const handleEdit = async () => {
+  const handleEdit = async (event) => {
     setErrorMessage("");
     const updatedFields = {};
     if (nomeUsuario !== user.nome_usuario) {
@@ -27,6 +27,7 @@ export function EditUserModal({ user, onEdit }) {
     }
     try {
       const token = localStorage.getItem("@beaba:token");
+
       const response = await api.put(
         `/users/${user.id_usuario}`,
         updatedFields,

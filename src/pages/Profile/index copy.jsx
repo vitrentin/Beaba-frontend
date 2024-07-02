@@ -8,15 +8,15 @@ import { useEffect, useState, useRef } from "react";
 import { api } from "../../services/api";
 import editar from "../../assets/Editar.svg";
 import excluir from "../../assets/Deletar.svg";
-import { EditTransactionModal } from "../../components/EditTransactionModal";
-import { DeleteTransactionModal } from "../../components/DeleteTransactionModal";
-import { SearchTransactionForm } from "../../components/SearchTransactionForm";
+import { EditProfileModal } from "../../components/EditProfileModal";
+import { DeleteProfileModal } from "../../components/DeleteProfileModal";
+import { SearchProfileForm } from "../../components/SearchProfileForm";
 import * as Dialog from "@radix-ui/react-dialog";
 
-const TRANSACTIONS_PER_PAGE = 5;
+const PROFILES_PER_PAGE = 5;
 
-export function Transaction() {
-  document.title = `Gestão de transações`;
+export function Profile() {
+  document.title = `Gestão de perfis`;
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const modalRef = useRef(null);
@@ -31,17 +31,16 @@ export function Transaction() {
     }
   }, [isFormOpen]);
 
-  const [nome_transacao, setNomeTransacao] = useState("");
-  const [descricao_transacao, setDescricaoTransacao] = useState("");
-  const [nome_modulo_associado, setNomeModuloAssociado] = useState("");
+  const [nome_perfil, setNomePerfil] = useState("");
+  const [nome_modulo, setNomeModulo] = useState("");
 
-  const [transactions, setTransactions] = useState([]);
+  const [profiles, setProfiles] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [searchResults, setSearchResults] = useState([]);
 
   function handleSignUp() {
-    if (!nome_transacao) {
-      return alert("Preencha pelo menos o nome da transação!");
+    if (!nome_perfil) {
+      return alert("Preencha pelo menos o nome do perfil!");
     }
 
     const token = localStorage.getItem("@beaba:token");
@@ -49,35 +48,27 @@ export function Transaction() {
       return alert("Token não encontrado. Faça login novamente.");
     }
 
-    const transactionData = {
-      nome_transacao,
-      descricao_transacao,
-      nome_modulo: nome_modulo_associado || undefined,
-    };
-    console.log("Enviando dados:", transactionData);
+    const profileData = { nome_perfil, nome_modulo: nome_modulo || undefined };
+    console.log("Enviando dados:", profileData);
 
     api
-      .post("/transaction", transactionData, {
+      .post("/profile", profileData, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       })
       .then(() => {
-        alert(
-          "Transação cadastrada com sucesso e/ou módulo associado com sucesso!"
-        );
-        fetchTransactions();
-        // setNomeTransacao("");
-        // setDescricaoTransacao("");
-        setNomeModuloAssociado("");
+        alert("Perfil cadastrado e/ou módulo associado com sucesso!");
+        fetchProfiles();
+        setNomeModulo("");
       })
       .catch((error) => {
         if (error.response) {
           console.error("Erro na resposta do servidor:", error.response.data);
           alert(
             error.response.data.message ||
-              "Erro ao cadastrar transação e/ou associar módulo"
+              "Erro ao cadastrar perfil e/ou associar módulo"
           );
         } else {
           console.error("Erro na requisição:", error.message);
@@ -87,49 +78,48 @@ export function Transaction() {
   }
 
   useEffect(() => {
-    fetchTransactions();
+    fetchProfiles();
   }, []);
 
-  const fetchTransactions = async () => {
+  const fetchProfiles = async () => {
     try {
       const token = localStorage.getItem("@beaba:token");
-      const response = await api.get("/transactions", {
+      const response = await api.get("/profiles", {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
       });
-      setTransactions(response.data);
+      setProfiles(response.data);
     } catch (error) {
-      console.error("Erro ao buscar transações:", error);
+      console.error("Erro ao buscar perfis:", error);
     }
   };
 
-  const offset = currentPage * TRANSACTIONS_PER_PAGE;
-  const currentPageTransactions = transactions.slice(
+  const offset = currentPage * PROFILES_PER_PAGE;
+  const currentPageProfiles = profiles.slice(
     offset,
-    offset + TRANSACTIONS_PER_PAGE
+    offset + PROFILES_PER_PAGE
   );
-  const pageCount = Math.ceil(transactions.length / TRANSACTIONS_PER_PAGE);
+  const pageCount = Math.ceil(profiles.length / PROFILES_PER_PAGE);
 
   const handlePageClick = ({ selected }) => {
     setCurrentPage(selected);
   };
-  const handleDeleteTransaction = (deletedTransactionId) => {
-    setTransactions(
-      transactions.filter(
-        (transaction) => transaction.id_transacao !== deletedTransactionId
-      )
+  const handleDeleteProfile = (deletedProfileId) => {
+    setProfiles(
+      profiles.filter((profile) => profile.id_perfil !== deletedProfileId)
     );
   };
-  const handleEditTransaction = (editTransactionId, updatedTransaction) => {
-    setTransactions((prevTransactions) =>
-      prevTransactions.map((transaction) =>
-        transaction.id_transacao === editTransactionId
-          ? { ...transaction, ...updatedTransaction }
-          : transaction
-      )
-    );
+  const handleEditProfile = (editProfileId, updatedProfile) => {
+    setProfiles((prevProfiles) => {
+      console.log(prevProfiles);
+      return prevProfiles.map((profile) =>
+        profile.id_perfil === editProfileId
+          ? { ...profile, ...updatedProfile }
+          : profile
+      );
+    });
   };
   const handleSearchResults = (results) => {
     setSearchResults(results);
@@ -137,76 +127,64 @@ export function Transaction() {
 
   return (
     <Container>
-      <Navigation title="Gestão de transações" />
-      <Section title="Gestão de transações:">
+      <Navigation title="Gestão de perfis" />
+      <Section title="Gestão de perfis:">
         <Button
-          title="Cadastrar novas transações"
-          id="newTransactions"
+          title="Cadastrar novos perfis"
+          id="newProfiles"
           onClick={handleFormOpen}
         />
         {isFormOpen && (
           <Form
             ref={modalRef}
             role="dialog"
-            aria-label="Cadastrar Transação"
+            aria-label="Cadastrar Usuários"
             tabIndex={-1}
           >
             <div>
-              <h3>Nome da transação:</h3>
+              <h3>Nome do perfil:</h3>
               <Input
                 placeholder="Digite um nome:"
                 type="text"
-                value={nome_transacao}
-                onChange={(event) => setNomeTransacao(event.target.value)}
+                value={nome_perfil}
+                onChange={(event) => setNomePerfil(event.target.value)}
               />
             </div>
             <div>
-              <h3>Descrição da transação:</h3>
-              <Input
-                placeholder="Digite a descrição da transação:"
-                type="text"
-                value={descricao_transacao}
-                onChange={(event) => setDescricaoTransacao(event.target.value)}
-              />
-            </div>
-            <div>
-              <h3>Nome do módulo associado:</h3>
+              <h3>Módulo que deseja associar:</h3>
               <Input
                 placeholder="Digite o nome do módulo:"
                 type="text"
-                value={nome_modulo_associado}
-                onChange={(event) => setNomeModuloAssociado(event.target.value)}
+                value={nome_modulo}
+                onChange={(event) => setNomeModulo(event.target.value)}
               />
             </div>
             <Button id="space" title="Cadastrar" onClick={handleSignUp} />
           </Form>
         )}
 
-        <h4>Transações existentes:</h4>
-        <SearchTransactionForm
+        <h4>Perfis existentes:</h4>
+        <SearchProfileForm
           onSearchResults={handleSearchResults}
-          fetchTransactions={fetchTransactions}
+          fetchProfiles={fetchProfiles}
         />
         <div className="tabela">
           <table id="responsivo">
             <thead>
               <tr>
-                <th className="maior">Transação</th>
-                <th className="maior">Descrição</th>
-                <th className="menor">Módulo</th>
+                <th className="maior">Perfil</th>
+                <th className="maior">Módulo associado</th>
                 <th className="menor">Editar</th>
                 <th className="menor">Excluir</th>
               </tr>
             </thead>
             <tbody>
               {searchResults.length > 0
-                ? searchResults.map((transaction) => (
-                    <tr key={transaction.id_transacao}>
-                      <td>{transaction.nome_transacao}</td>
-                      <td>{transaction.descricao_transacao}</td>
-
+                ? searchResults.map((profile) => (
+                    <tr key={profile.id_perfil}>
+                      <td>{profile.nome_perfil}</td>
                       <td>
-                        {transaction.transacao_modulo
+                        {profile.perfil_modulo
                           .map((modulo) => modulo.modulo.nome_modulo)
                           .join(", ")}
                       </td>
@@ -218,9 +196,9 @@ export function Transaction() {
                               Editar
                             </button>
                           </Dialog.Trigger>
-                          <EditTransactionModal
-                            transaction={transaction}
-                            onEdit={handleEditTransaction}
+                          <EditProfileModal
+                            profile={profile}
+                            onEdit={handleEditProfile}
                           />
                         </Dialog.Root>
                       </td>
@@ -232,19 +210,18 @@ export function Transaction() {
                               Excluir
                             </button>
                           </Dialog.Trigger>
-                          <DeleteTransactionModal
-                            transaction={transaction}
-                            onDelete={handleDeleteTransaction}
+                          <DeleteProfileModal
+                            profile={profile}
+                            onDelete={handleDeleteProfile}
                           />
                         </Dialog.Root>
                       </td>
                     </tr>
                   ))
-                : currentPageTransactions.map((transaction) => (
-                    <tr key={transaction.id_transacao}>
-                      <td>{transaction.nome_transacao}</td>
-                      <td>{transaction.descricao_transacao}</td>
-                      <td>{transaction.modules}</td>
+                : currentPageProfiles.map((profile) => (
+                    <tr key={profile.id_perfil}>
+                      <td>{profile.nome_perfil}</td>
+                      <td>{profile.modules}</td>
                       <td>
                         <Dialog.Root>
                           <Dialog.Trigger asChild>
@@ -253,9 +230,9 @@ export function Transaction() {
                               Editar
                             </button>
                           </Dialog.Trigger>
-                          <EditTransactionModal
-                            transaction={transaction}
-                            onEdit={handleEditTransaction}
+                          <EditProfileModal
+                            profile={profile}
+                            onEdit={handleEditProfile}
                           />
                         </Dialog.Root>
                       </td>
@@ -267,9 +244,9 @@ export function Transaction() {
                               Excluir
                             </button>
                           </Dialog.Trigger>
-                          <DeleteTransactionModal
-                            transaction={transaction}
-                            onDelete={handleDeleteTransaction}
+                          <DeleteProfileModal
+                            profile={profile}
+                            onDelete={handleDeleteProfile}
                           />
                         </Dialog.Root>
                       </td>

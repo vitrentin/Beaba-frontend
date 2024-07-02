@@ -112,14 +112,13 @@ export function Profile() {
     );
   };
   const handleEditProfile = (editProfileId, updatedProfile) => {
-    setProfiles((prevProfiles) => {
-      console.log(prevProfiles);
-      return prevProfiles.map((profile) =>
+    setProfiles((prevProfiles) =>
+      prevProfiles.map((profile) =>
         profile.id_perfil === editProfileId
           ? { ...profile, ...updatedProfile }
           : profile
-      );
-    });
+      )
+    );
   };
   const handleSearchResults = (results) => {
     setSearchResults(results);
@@ -169,7 +168,7 @@ export function Profile() {
           fetchProfiles={fetchProfiles}
         />
         <div className="tabela">
-          <table>
+          <table id="responsivo">
             <thead>
               <tr>
                 <th className="maior">Perfil</th>

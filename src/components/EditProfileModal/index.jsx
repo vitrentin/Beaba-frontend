@@ -5,22 +5,28 @@ import { RiCloseFill } from "react-icons/ri";
 import { CloseButton, Content, Overlay } from "./styles";
 import { Button } from "../Button";
 import { Input } from "../Input";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { api } from "../../services/api";
+import { Tag } from "../Tag";
 
 export function EditProfileModal({ profile, onEdit }) {
-  const [nomePerfil, setNomePerfil] = useState(profile.nome_perfil);
-  // const [nomeModulo, setNomeModulo] = useState(profile.nome_modulo);
+  const [nomePerfil, setNomePerfil] = useState("");
+  const [modules, setModules] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
+
+  useEffect(() => {
+    if (profile) {
+      setNomePerfil(profile.nome_perfil || "");
+      setModules(profile.perfil_modulo || []);
+    }
+  }, [profile]);
+
   const handleEdit = async () => {
     setErrorMessage("");
     const updatedFields = {};
     if (nomePerfil !== profile.nome_perfil) {
       updatedFields.nome_perfil = nomePerfil;
     }
-    // if (nomeModulo !== profile.nome_modulo) {
-    //   updatedFields.nome_modulo = nomeModulo;
-    // }
 
     try {
       const token = localStorage.getItem("@beaba:token");
@@ -34,7 +40,7 @@ export function EditProfileModal({ profile, onEdit }) {
           },
         }
       );
-      console.log("Response: ", response);
+      console.log("Response: ", response.data);
       onEdit(profile.id_perfil, updatedFields);
       alert("Perfil editado com sucesso!");
     } catch (error) {
@@ -53,11 +59,25 @@ export function EditProfileModal({ profile, onEdit }) {
       }
     }
   };
+  const handleRemoveModule = async (moduleId) => {
+    try {
+      const token = localStorage.getItem("@beaba:token");
+      await api.delete(`/profiles/${profile.id_perfil}/modules/${moduleId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      setModules(modules.filter((mod) => mod.modulo.id_modulo !== moduleId));
+    } catch (error) {
+      console.error("Erro ao remover módulo:", error);
+      alert("Erro ao remover módulo.");
+    }
+  };
 
   return (
     <Dialog.Portal>
       <Overlay />
-
       <Content>
         <Dialog.Title>Editar perfil:</Dialog.Title>
         <Dialog.Description>
@@ -76,13 +96,17 @@ export function EditProfileModal({ profile, onEdit }) {
             onChange={(event) => setNomePerfil(event.target.value)}
           />
 
-          <label>Nome do módulo:</label>
-          <Input
-            type="text"
-            placeholder="Editar módulo:"
-            // value={nomeModulo}
-            // onChange={(event) => setNomeModulo(event.target.value)}
-          />
+          <label>Módulos associados:</label>
+          <div>
+            {modules.map((mod) => (
+              <Tag
+                key={mod.modulo.id_modulo}
+                onRemove={() => handleRemoveModule(mod.modulo.id_modulo)}
+              >
+                {mod.modulo.nome_modulo}
+              </Tag>
+            ))}
+          </div>
 
           <Dialog.Close asChild>
             <Button title="Editar" type="submit" onClick={handleEdit} />

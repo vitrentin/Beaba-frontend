@@ -184,7 +184,7 @@ export function Function() {
           fetchFunctions={fetchFunctions}
         />
         <div className="tabela">
-          <table>
+          <table id="responsivo">
             <thead>
               <tr>
                 <th className="maior">Função</th>

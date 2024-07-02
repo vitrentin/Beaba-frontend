@@ -2,6 +2,7 @@ import styled from "styled-components";
 import "../../styles/styled-components.d.ts";
 export const Container = styled.header`
   display: flex;
+  width: 100%;
   border-bottom-width: 1px;
   border-bottom-style: solid;
   border-bottom-color: ${({ theme }) => theme.COLORS.BLACK};
@@ -41,10 +42,9 @@ export const Container = styled.header`
     .mobile {
       display: flex;
       gap: 2rem;
-      width: 100%;
+      width: 100vw;
       justify-content: space-between;
-      padding: 0 4rem;
-
+      padding: 0 6rem;
       button {
         display: flex;
         justify-content: center;

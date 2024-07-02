@@ -5,7 +5,12 @@ export const Container = styled.div`
   width: 100%;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  flex-direction: center;
+  @media (min-width: ${({ theme }) => theme.DEVICE_BREAKPOINTS.MD}) {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
   > header {
     width: 100%;
     height: 14.5rem;
@@ -27,7 +32,7 @@ export const Container = styled.div`
     font-size: 2.4rem;
   }
   #newUsers {
-    margin: 0 6rem;
+    margin: 0 4rem;
   }
   h4 {
     display: flex;
@@ -76,7 +81,26 @@ export const Container = styled.div`
     gap: 2px;
     background-color: transparent;
   }
-  @media (max-width: ${({ theme }) => theme.DEVICE_BREAKPOINTS.MD}) {
+  @media (min-width: ${({ theme }) => theme.DEVICE_BREAKPOINTS.P}) {
+    .tabela {
+      overflow-x: auto;
+      display: flex;
+      justify-content: flex-start;
+    }
+
+    table {
+      min-width: 500px;
+    }
+
+    h4,
+    #newUsers {
+      margin-left: 1rem;
+      margin-right: 1rem;
+    }
+    #responsivo {
+      justify-content: flex-start;
+      overflow-x: auto;
+    }
   }
 `;
 export const Form = styled.form`
@@ -96,6 +120,7 @@ export const Form = styled.form`
 export const Pages = styled(ReactPaginate)`
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   margin-left: 2rem;
   gap: 4rem;
   list-style: none;

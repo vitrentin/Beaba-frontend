@@ -5,18 +5,23 @@ import { RiCloseFill } from "react-icons/ri";
 import { CloseButton, Content, Overlay } from "./styles";
 import { Button } from "../Button";
 import { Input } from "../Input";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { api } from "../../services/api";
+import { Tag } from "../Tag";
 
 export function EditFunctionModal({ functions, onEdit }) {
-  const [nomeFuncao, setNomeFuncao] = useState(functions.nome_funcao);
-  const [descricaoFuncao, setDescricaoFuncao] = useState(
-    functions.descricao_funcao
-  );
-  // const [nomeModuloAssociado, setNomeModuloAssociado] = useState(
-  //   transaction.nome_modulo_associado
-  // );
+  const [nomeFuncao, setNomeFuncao] = useState("");
+  const [descricaoFuncao, setDescricaoFuncao] = useState("");
+  const [modules, setModules] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
+  useEffect(() => {
+    if (functions) {
+      setNomeFuncao(functions.nome_funcao || "");
+      setDescricaoFuncao(functions.descricao_funcao || "");
+      setModules(functions.funcao_modulo || []);
+    }
+  }, [functions]);
+
   const handleEdit = async () => {
     setErrorMessage("");
     const updatedFields = {};
@@ -26,9 +31,7 @@ export function EditFunctionModal({ functions, onEdit }) {
     if (descricaoFuncao !== functions.descricao_funcao) {
       updatedFields.descricao_funcao = descricaoFuncao;
     }
-    // if (nomeModuloAssociado !== transaction.nome_modulo_associado) {
-    //   updatedFields.nome_modulo_associado = nomeModuloAssociado;
-    // }
+
     try {
       const token = localStorage.getItem("@beaba:token");
       const response = await api.put(
@@ -60,6 +63,24 @@ export function EditFunctionModal({ functions, onEdit }) {
       }
     }
   };
+  const handleRemoveModule = async (moduleId) => {
+    try {
+      const token = localStorage.getItem("@beaba:token");
+      await api.delete(
+        `/functions/${functions.id_funcao}/modules/${moduleId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      setModules(modules.filter((mod) => mod.modulo.id_modulo !== moduleId));
+    } catch (error) {
+      console.error("Erro ao remover módulo:", error);
+      alert("Erro ao remover módulo.");
+    }
+  };
 
   return (
     <Dialog.Portal>
@@ -89,13 +110,17 @@ export function EditFunctionModal({ functions, onEdit }) {
             value={descricaoFuncao}
             onChange={(event) => setDescricaoFuncao(event.target.value)}
           />
-          <label>Nome do módulo associado:</label>
-          <Input
-            type="text"
-            placeholder="Editar módulo associado:"
-            // value={nomeModuloAssociado}
-            // onChange={(event) => setNomeModuloAssociado(event.target.value)}
-          />
+          <label>Módulos associados:</label>
+          <div>
+            {modules.map((mod) => (
+              <Tag
+                key={mod.modulo.id_modulo}
+                onRemove={() => handleRemoveModule(mod.modulo.id_modulo)}
+              >
+                {mod.modulo.nome_modulo}
+              </Tag>
+            ))}
+          </div>
           <Dialog.Close asChild>
             <Button
               id="space"

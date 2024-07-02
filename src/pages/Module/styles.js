@@ -1,13 +1,18 @@
 import styled from "styled-components";
+import "../../styles/styled-components.d.ts";
 import ReactPaginate from "react-paginate";
 export const Container = styled.div`
   width: 100%;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  @media (min-width: ${({ theme }) => theme.DEVICE_BREAKPOINTS.MD}) {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
   > header {
     width: 100%;
-    height: 144px;
+    height: 14.5rem;
 
     background: ${({ theme }) => theme.COLORS.BACKGROUND_STRONG};
 
@@ -34,6 +39,10 @@ export const Container = styled.div`
     margin-bottom: 1rem;
     margin-left: 6rem;
     font-size: 2.4rem;
+  }
+  .tabela {
+    width: 100%;
+    overflow-x: auto;
   }
   table {
     width: 100%;
@@ -70,6 +79,27 @@ export const Container = styled.div`
     align-items: center;
     gap: 2px;
     background-color: transparent;
+  }
+  @media (min-width: ${({ theme }) => theme.DEVICE_BREAKPOINTS.P}) {
+    .tabela {
+      overflow-x: auto;
+      display: flex;
+      justify-content: flex-start;
+    }
+
+    table {
+      min-width: 500px;
+    }
+
+    h4,
+    #newUsers {
+      margin-left: 1rem;
+      margin-right: 1rem;
+    }
+    #responsivo {
+      justify-content: flex-start;
+      overflow-x: auto;
+    }
   }
 `;
 export const Form = styled.form`

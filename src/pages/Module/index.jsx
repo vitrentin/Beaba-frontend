@@ -160,7 +160,7 @@ export function Module() {
           fetchModules={fetchModules}
         />
         <div className="tabela">
-          <table>
+          <table id="responsivo">
             <thead>
               <tr>
                 <th className="maior">Módulo</th>

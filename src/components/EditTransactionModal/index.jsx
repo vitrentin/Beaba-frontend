@@ -5,20 +5,23 @@ import { RiCloseFill } from "react-icons/ri";
 import { CloseButton, Content, Overlay } from "./styles";
 import { Button } from "../Button";
 import { Input } from "../Input";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { api } from "../../services/api";
+import { Tag } from "../Tag";
 
 export function EditTransactionModal({ transaction, onEdit }) {
-  const [nomeTransacao, setNomeTransacao] = useState(
-    transaction.nome_transacao
-  );
-  const [descricaoTransacao, setDescricaoTransacao] = useState(
-    transaction.descricao_transacao
-  );
-  // const [nomeModuloAssociado, setNomeModuloAssociado] = useState(
-  //   transaction.nome_modulo_associado
-  // );
+  const [nomeTransacao, setNomeTransacao] = useState("");
+  const [descricaoTransacao, setDescricaoTransacao] = useState("");
+  const [modules, setModules] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
+  useEffect(() => {
+    if (transaction) {
+      setNomeTransacao(transaction.nome_transacao || "");
+      setDescricaoTransacao(transaction.descricao_transacao || "");
+      setModules(transaction.transacao_modulo || []);
+    }
+  }, [transaction]);
+
   const handleEdit = async () => {
     setErrorMessage("");
     const updatedFields = {};
@@ -28,9 +31,7 @@ export function EditTransactionModal({ transaction, onEdit }) {
     if (descricaoTransacao !== transaction.descricao_transacao) {
       updatedFields.descricao_transacao = descricaoTransacao;
     }
-    // if (nomeModuloAssociado !== transaction.nome_modulo_associado) {
-    //   updatedFields.nome_modulo_associado = nomeModuloAssociado;
-    // }
+
     try {
       const token = localStorage.getItem("@beaba:token");
       const response = await api.put(
@@ -43,7 +44,7 @@ export function EditTransactionModal({ transaction, onEdit }) {
           },
         }
       );
-      console.log("Response: ", response);
+      console.log("Response: ", response.data);
       onEdit(transaction.id_transacao, updatedFields);
       alert("Transação editada com sucesso!");
     } catch (error) {
@@ -62,7 +63,24 @@ export function EditTransactionModal({ transaction, onEdit }) {
       }
     }
   };
-
+  const handleRemoveModule = async (moduleId) => {
+    try {
+      const token = localStorage.getItem("@beaba:token");
+      await api.delete(
+        `/transactions/${transaction.id_transacao}/modules/${moduleId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      setModules(modules.filter((mod) => mod.modulo.id_modulo !== moduleId));
+    } catch (error) {
+      console.error("Erro ao remover módulo:", error);
+      alert("Erro ao remover módulo.");
+    }
+  };
   return (
     <Dialog.Portal>
       <Overlay />
@@ -91,13 +109,17 @@ export function EditTransactionModal({ transaction, onEdit }) {
             value={descricaoTransacao}
             onChange={(event) => setDescricaoTransacao(event.target.value)}
           />
-          <label>Nome do módulo associado:</label>
-          <Input
-            type="text"
-            placeholder="Editar módulo associado:"
-            // value={nomeModuloAssociado}
-            // onChange={(event) => setNomeModuloAssociado(event.target.value)}
-          />
+          <label>Módulos associados:</label>
+          <div>
+            {modules.map((mod) => (
+              <Tag
+                key={mod.modulo.id_modulo}
+                onRemove={() => handleRemoveModule(mod.modulo.id_modulo)}
+              >
+                {mod.modulo.nome_modulo}
+              </Tag>
+            ))}
+          </div>
           <Dialog.Close asChild>
             <Button title="Editar" type="submit" onClick={handleEdit} />
           </Dialog.Close>
