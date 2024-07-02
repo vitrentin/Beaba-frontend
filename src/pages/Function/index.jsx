@@ -136,7 +136,7 @@ export function Function() {
       <Navigation title="Gestão de funções" />
       <Section title="Gestão de funções:">
         <Button
-          title="Cadastrar novas funções"
+          title={isFormOpen ? "Fechar formulário" : "Cadastrar novas funções"}
           id="newFunctions"
           onClick={handleFormOpen}
         />

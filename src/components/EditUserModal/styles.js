@@ -22,6 +22,23 @@ export const Content = styled(Dialog.Content)`
   left: 50%;
   transform: translate(-50%, -50%);
   font-size: 2.4rem;
+  select {
+    padding: 0.8rem 1.2rem;
+    font-size: 1.6rem;
+    border-radius: 2.5rem;
+    background-color: ${({ theme }) => theme.COLORS.BGBUTTON};
+    cursor: pointer;
+  }
+
+  option {
+    background-color: ${({ theme }) => theme.COLORS.BGBUTTON};
+    color: ${({ theme }) => theme.COLORS.BACKGROUND_STRONG};
+  }
+
+  select:focus {
+    outline: none;
+    border-color: ${({ theme }) => theme.COLORS.BACKGROUND_STRONG};
+  }
   input {
     font-size: 2rem;
   }

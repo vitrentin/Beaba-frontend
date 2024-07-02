@@ -121,7 +121,7 @@ export function Module() {
       <Navigation title="Gestão de módulos" />
       <Section title="Gestão de módulos:">
         <Button
-          title="Cadastrar novos módulos"
+          title={isFormOpen ? "Fechar formulário" : "Cadastrar novos módulos"}
           id="newModules"
           onClick={handleFormOpen}
         />

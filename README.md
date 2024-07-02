@@ -1,4 +1,4 @@
-# Sistema de Gerenciamento de Acesso - Beaba
+# Sistema de Gerenciamento de Acesso - Beaba-frontend
 
 ## Tecnologias Utilizadas
 

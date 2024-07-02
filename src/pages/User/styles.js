@@ -6,6 +6,23 @@ export const Container = styled.div`
   display: flex;
   flex-direction: column;
   flex-direction: center;
+  select {
+    padding: 0.8rem 1.2rem;
+    font-size: 1.6rem;
+    border-radius: 2.5rem;
+    background-color: ${({ theme }) => theme.COLORS.BGBUTTON};
+    cursor: pointer;
+  }
+
+  option {
+    background-color: ${({ theme }) => theme.COLORS.BGBUTTON};
+    color: ${({ theme }) => theme.COLORS.BACKGROUND_STRONG};
+  }
+
+  select:focus {
+    outline: none;
+    border-color: ${({ theme }) => theme.COLORS.BACKGROUND_STRONG};
+  }
   @media (min-width: ${({ theme }) => theme.DEVICE_BREAKPOINTS.MD}) {
     display: flex;
     flex-direction: column;
@@ -31,9 +48,9 @@ export const Container = styled.div`
   h3 {
     font-size: 2.4rem;
   }
-  #newUsers {
+  /* #newUsers {
     margin: 0 4rem;
-  }
+  } */
   h4 {
     display: flex;
     margin-top: 2rem;
@@ -114,7 +131,7 @@ export const Form = styled.form`
     gap: 0.5rem;
   }
   #space {
-    margin-top: 1rem;
+    margin-top: 1.5rem;
   }
 `;
 export const Pages = styled(ReactPaginate)`

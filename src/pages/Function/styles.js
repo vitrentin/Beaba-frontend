@@ -30,9 +30,9 @@ export const Container = styled.div`
   h3 {
     font-size: 2.4rem;
   }
-  #newFunctions {
+  /* #newFunctions {
     margin: 0 4rem;
-  }
+  } */
   h4 {
     display: flex;
     margin-top: 2rem;

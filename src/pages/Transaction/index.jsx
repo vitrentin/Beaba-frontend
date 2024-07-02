@@ -140,7 +140,9 @@ export function Transaction() {
       <Navigation title="Gestão de transações" />
       <Section title="Gestão de transações:">
         <Button
-          title="Cadastrar novas transações"
+          title={
+            isFormOpen ? "Fechar formulário" : "Cadastrar novas transações"
+          }
           id="newTransactions"
           onClick={handleFormOpen}
         />

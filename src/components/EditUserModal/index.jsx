@@ -5,14 +5,34 @@ import { RiCloseFill } from "react-icons/ri";
 import { CloseButton, Content, Overlay } from "./styles";
 import { Button } from "../Button";
 import { Input } from "../Input";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { api } from "../../services/api";
 
 export function EditUserModal({ user, onEdit }) {
   const [nomeUsuario, setNomeUsuario] = useState(user.nome_usuario);
   const [email, setEmail] = useState(user.email);
   const [senha, setSenha] = useState("");
+  const [perfilId, setPerfilId] = useState(user.perfil_id);
+  const [perfis, setPerfis] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
+  useEffect(() => {
+    fetchPerfis();
+  }, []);
+
+  const fetchPerfis = async () => {
+    try {
+      const token = localStorage.getItem("@beaba:token");
+      const response = await api.get("/profiles", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      setPerfis(response.data);
+    } catch (error) {
+      console.error("Erro ao buscar perfis:", error);
+    }
+  };
   const handleEdit = async (event) => {
     setErrorMessage("");
     const updatedFields = {};
@@ -24,6 +44,9 @@ export function EditUserModal({ user, onEdit }) {
     }
     if (senha) {
       updatedFields.senha = senha;
+    }
+    if (perfilId !== user.perfil_id) {
+      updatedFields.perfil_id = perfilId;
     }
     try {
       const token = localStorage.getItem("@beaba:token");
@@ -94,6 +117,17 @@ export function EditUserModal({ user, onEdit }) {
             placeholder="Editar senha:"
             onChange={(event) => setSenha(event.target.value)}
           />
+          <label>Perfil:</label>
+          <select
+            value={perfilId}
+            onChange={(event) => setPerfilId(parseInt(event.target.value))}
+          >
+            {perfis.map((perfil) => (
+              <option key={perfil.id_perfil} value={perfil.id_perfil}>
+                {perfil.nome_perfil}
+              </option>
+            ))}
+          </select>
           <Dialog.Close asChild>
             <Button
               id="space"

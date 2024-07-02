@@ -34,6 +34,8 @@ export function User() {
   const [nome_usuario, setNomeUsuario] = useState("");
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
+  const [perfil_id, setPerfilId] = useState(2);
+  const [perfis, setPerfis] = useState([]);
 
   const [users, setUsers] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
@@ -49,7 +51,8 @@ export function User() {
       return alert("Token não encontrado. Faça login novamente.");
     }
 
-    const userData = { nome_usuario, email, senha };
+    // perfil_id
+    const userData = { nome_usuario, email, senha, perfil_id };
     console.log("Enviando dados:", userData);
 
     api
@@ -65,6 +68,7 @@ export function User() {
         setNomeUsuario("");
         setEmail("");
         setSenha("");
+        setPerfilId(2);
       })
       .catch((error) => {
         if (error.response) {
@@ -78,9 +82,23 @@ export function User() {
   }
 
   useEffect(() => {
+    fetchPerfis();
     fetchUsers();
   }, []);
-
+  const fetchPerfis = async () => {
+    try {
+      const token = localStorage.getItem("@beaba:token");
+      const response = await api.get("/profiles", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      setPerfis(response.data);
+    } catch (error) {
+      console.error("Erro ao buscar perfis:", error);
+    }
+  };
   const fetchUsers = async () => {
     try {
       const token = localStorage.getItem("@beaba:token");
@@ -90,6 +108,7 @@ export function User() {
           "Content-Type": "application/json",
         },
       });
+      // console.log("Dados dos usuários:", response.data);
       setUsers(response.data);
     } catch (error) {
       console.error("Erro ao buscar usuários:", error);
@@ -123,7 +142,7 @@ export function User() {
       <Navigation title="Gestão de usuários" />
       <Section title="Gestão de usuários:">
         <Button
-          title="Cadastrar novos usuários"
+          title={isFormOpen ? "Fechar formulário" : "Cadastrar novos usuários"}
           id="newUsers"
           onClick={handleFormOpen}
         />
@@ -164,6 +183,19 @@ export function User() {
                 onChange={(event) => setSenha(event.target.value)}
               />
             </div>
+            <div>
+              <h3>Perfil:</h3>
+              <select
+                value={perfil_id}
+                onChange={(event) => setPerfilId(parseInt(event.target.value))}
+              >
+                {perfis.map((perfil) => (
+                  <option key={perfil.id_perfil} value={perfil.id_perfil}>
+                    {perfil.nome_perfil}
+                  </option>
+                ))}
+              </select>
+            </div>
             <Button id="space" title="Cadastrar" onClick={handleSignUp} />
           </Form>
         )}
@@ -180,6 +212,7 @@ export function User() {
               <tr>
                 <th className="maior">Nome</th>
                 <th className="maior">Email</th>
+                <th className="maior">Perfil</th>
                 <th className="menor">Editar</th>
                 <th className="menor">Excluir</th>
               </tr>
@@ -190,6 +223,11 @@ export function User() {
                     <tr key={user.id_usuario}>
                       <td>{user.nome_usuario}</td>
                       <td>{user.email}</td>
+                      <td>
+                        {perfis.find(
+                          (perfil) => perfil.id_perfil === user.perfil_id
+                        )?.nome_perfil || ""}
+                      </td>
                       <td>
                         <Dialog.Root>
                           <Dialog.Trigger asChild>
@@ -221,6 +259,11 @@ export function User() {
                     <tr key={user.id_usuario}>
                       <td>{user.nome_usuario}</td>
                       <td>{user.email}</td>
+                      <td>
+                        {perfis.find(
+                          (perfil) => perfil.id_perfil === user.perfil_id
+                        )?.nome_perfil || ""}
+                      </td>
                       <td>
                         <Dialog.Root>
                           <Dialog.Trigger asChild>

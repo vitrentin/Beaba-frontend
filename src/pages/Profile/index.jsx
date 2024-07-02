@@ -129,7 +129,7 @@ export function Profile() {
       <Navigation title="Gestão de perfis" />
       <Section title="Gestão de perfis:">
         <Button
-          title="Cadastrar novos perfis"
+          title={isFormOpen ? "Fechar formulário" : "Cadastrar novos perfis"}
           id="newProfiles"
           onClick={handleFormOpen}
         />
