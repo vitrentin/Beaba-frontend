@@ -14,6 +14,7 @@ export function Home() {
         <Button title="Gestão de Módulos" to="/module" />
         <Button title="Gestão de Transações" to="/transaction" />
         <Button title="Gestão de Funções" to="/function" />
+        <Button title="Relatórios" to="/reports" />
       </div>
     </Container>
   );

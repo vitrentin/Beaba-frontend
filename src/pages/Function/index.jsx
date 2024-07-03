@@ -2,12 +2,10 @@ import { Section } from "../../components/Section";
 import { Button } from "../../components/Button";
 import { Input } from "../../components/Input";
 import { Container, Form, Pages } from "./styles";
-// import { FiMail, FiLock, FiUser } from "react-icons/fi";
+import { RiDeleteBin5Line, RiEdit2Line } from "react-icons/ri";
 import { Navigation } from "../../components/Navigation";
 import { useEffect, useState, useRef } from "react";
 import { api } from "../../services/api";
-import editar from "../../assets/Editar.svg";
-import excluir from "../../assets/Deletar.svg";
 import { EditFunctionModal } from "../../components/EditFunctionModal";
 import { DeleteFunctionModal } from "../../components/DeleteFunctionModal";
 import { SearchFunctionForm } from "../../components/SearchFunctionForm";
@@ -97,7 +95,7 @@ export function Function() {
           "Content-Type": "application/json",
         },
       });
-      setFunctions(response.data);
+      setFunctions(response.data.functionsWithModules);
     } catch (error) {
       console.error("Erro ao buscar funções:", error);
     }
@@ -154,12 +152,13 @@ export function Function() {
                 type="text"
                 value={nome_funcao}
                 onChange={(event) => setNomeFuncao(event.target.value)}
+                required
               />
             </div>
             <div>
               <h3>Descrição da função:</h3>
               <Input
-                placeholder="Digite a descrição da função:"
+                placeholder="Opcional"
                 type="text"
                 value={descricao_funcao}
                 onChange={(event) => setDescricaoFuncao(event.target.value)}
@@ -168,7 +167,7 @@ export function Function() {
             <div>
               <h3>Nome do módulo associado:</h3>
               <Input
-                placeholder="Digite o nome do módulo:"
+                placeholder="Opcional"
                 type="text"
                 value={nome_modulo_associado}
                 onChange={(event) => setNomeModuloAssociado(event.target.value)}
@@ -210,7 +209,7 @@ export function Function() {
                         <Dialog.Root>
                           <Dialog.Trigger asChild>
                             <button>
-                              <img src={editar} alt="Editar" />
+                              <RiEdit2Line size={36} />
                               Editar
                             </button>
                           </Dialog.Trigger>
@@ -224,7 +223,7 @@ export function Function() {
                         <Dialog.Root>
                           <Dialog.Trigger asChild>
                             <button>
-                              <img src={excluir} alt="Excluir" />
+                              <RiDeleteBin5Line size={36} />
                               Excluir
                             </button>
                           </Dialog.Trigger>
@@ -245,7 +244,7 @@ export function Function() {
                         <Dialog.Root>
                           <Dialog.Trigger asChild>
                             <button>
-                              <img src={editar} alt="Editar" />
+                              <RiEdit2Line size={36} />
                               Editar
                             </button>
                           </Dialog.Trigger>
@@ -259,7 +258,7 @@ export function Function() {
                         <Dialog.Root>
                           <Dialog.Trigger asChild>
                             <button>
-                              <img src={excluir} alt="Excluir" />
+                              <RiDeleteBin5Line size={36} />
                               Excluir
                             </button>
                           </Dialog.Trigger>

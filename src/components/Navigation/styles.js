@@ -7,6 +7,7 @@ export const Container = styled.header`
   border-bottom-style: solid;
   border-bottom-color: ${({ theme }) => theme.COLORS.BLACK};
   background-color: ${({ theme }) => theme.COLORS.BACKGROUND_STRONG};
+
   header {
     width: 100%;
   }
@@ -21,6 +22,9 @@ export const Container = styled.header`
       flex-direction: column;
       justify-content: start;
       gap: 1rem;
+      font-size: 2rem;
+      font-weight: 900;
+
       color: ${({ theme }) => theme.COLORS.BGBUTTON};
     }
   }
@@ -53,6 +57,7 @@ export const Container = styled.header`
         width: 5rem;
         border: none;
         background: none;
+        color: ${({ theme }) => theme.COLORS.BGBUTTON};
         > img {
           width: 100%;
         }

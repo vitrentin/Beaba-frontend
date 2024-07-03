@@ -47,11 +47,17 @@ export function EditModuleModal({ module, onEdit }) {
           error.response.data.error === "Module already in use"
         ) {
           alert("Módulo já está em uso. Por favor, use um nome diferente.");
+          setNomeModulo(module.nome_modulo);
+          setDescricaoModulo(module.descricao_modulo);
         } else {
           alert("Erro ao editar módulo.");
+          setNomeModulo(module.nome_modulo);
+          setDescricaoModulo(module.descricao_modulo);
         }
       } else {
         alert("Erro ao editar módulo.");
+        setNomeModulo(module.nome_modulo);
+        setDescricaoModulo(module.descricao_modulo);
       }
     }
   };
@@ -65,7 +71,12 @@ export function EditModuleModal({ module, onEdit }) {
         <Dialog.Description>
           Preencha o dado que deseja editar
         </Dialog.Description>
-        <CloseButton>
+        <CloseButton
+          onClick={() => {
+            setNomeModulo(module.nome_modulo);
+            setDescricaoModulo(module.descricao_modulo);
+          }}
+        >
           <RiCloseFill size={24} />
         </CloseButton>
 

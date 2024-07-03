@@ -9,15 +9,22 @@ import { useState, useEffect } from "react";
 import { api } from "../../services/api";
 
 export function EditUserModal({ user, onEdit }) {
-  const [nomeUsuario, setNomeUsuario] = useState(user.nome_usuario);
-  const [email, setEmail] = useState(user.email);
+  const [nomeUsuario, setNomeUsuario] = useState("");
+  const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
-  const [perfilId, setPerfilId] = useState(user.perfil_id);
+  const [perfilId, setPerfilId] = useState("");
   const [perfis, setPerfis] = useState([]);
+  const [originalNomeUsuario, setOriginalNomeUsuario] = useState("");
+  const [originalEmail, setOriginalEmail] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   useEffect(() => {
+    setNomeUsuario(user.nome_usuario);
+    setEmail(user.email);
+    setOriginalNomeUsuario(user.nome_usuario);
+    setOriginalEmail(user.email);
+
     fetchPerfis();
-  }, []);
+  }, [user]);
 
   const fetchPerfis = async () => {
     try {
@@ -28,7 +35,7 @@ export function EditUserModal({ user, onEdit }) {
           "Content-Type": "application/json",
         },
       });
-      setPerfis(response.data);
+      setPerfis(response.data.profilesWithModules);
     } catch (error) {
       console.error("Erro ao buscar perfis:", error);
     }
@@ -36,10 +43,10 @@ export function EditUserModal({ user, onEdit }) {
   const handleEdit = async (event) => {
     setErrorMessage("");
     const updatedFields = {};
-    if (nomeUsuario !== user.nome_usuario) {
+    if (nomeUsuario !== originalNomeUsuario) {
       updatedFields.nome_usuario = nomeUsuario;
     }
-    if (email !== user.email) {
+    if (email !== originalEmail) {
       updatedFields.email = email;
     }
     if (senha) {
@@ -61,7 +68,6 @@ export function EditUserModal({ user, onEdit }) {
           },
         }
       );
-      console.log("Response: ", response);
       onEdit(user.id_usuario, updatedFields);
       alert("Usuário editado com sucesso!");
     } catch (error) {
@@ -72,10 +78,23 @@ export function EditUserModal({ user, onEdit }) {
           error.response.data.error === "Email already in use"
         ) {
           alert("Email já está em uso. Por favor, use um email diferente.");
+          setEmail(originalEmail);
+          setNomeUsuario(originalNomeUsuario);
+        } else if (
+          error.response.status === 404 &&
+          error.response.data.error === "Email not found"
+        ) {
+          setEmail(originalEmail);
+          setNomeUsuario(originalNomeUsuario);
+          alert("Email não encontrado. Por favor, insira um email válido.");
         } else {
+          setEmail(originalEmail);
+          setNomeUsuario(originalNomeUsuario);
           alert("Erro ao editar usuário.");
         }
       } else {
+        setEmail(user.email);
+        setNomeUsuario(user.nome_usuario);
         alert("Erro ao editar usuário.");
       }
     }
@@ -90,7 +109,12 @@ export function EditUserModal({ user, onEdit }) {
         <Dialog.Description>
           Preencha o dado que deseja editar
         </Dialog.Description>
-        <CloseButton>
+        <CloseButton
+          onClick={() => {
+            setEmail(originalEmail);
+            setNomeUsuario(originalNomeUsuario);
+          }}
+        >
           <RiCloseFill size={24} />
         </CloseButton>
 

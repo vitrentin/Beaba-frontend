@@ -55,11 +55,14 @@ export function EditFunctionModal({ functions, onEdit }) {
           error.response.data.error === "Function already in use"
         ) {
           alert("Função já está em uso. Por favor, use um nome diferente.");
+          setNomeFuncao(functions.nome_funcao);
         } else {
           alert("Erro ao editar função.");
+          setNomeFuncao(functions.nome_funcao);
         }
       } else {
         alert("Erro ao editar função.");
+        setNomeFuncao(functions.nome_funcao);
       }
     }
   };

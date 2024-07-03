@@ -1,13 +1,17 @@
 import * as Dialog from "@radix-ui/react-dialog";
 import { RiCloseFill } from "react-icons/ri";
 import { CloseButton, Content, Overlay } from "./styles";
-import home from "../../assets/Home.svg";
-import users from "../../assets/Gestao_de_usuario.svg";
-import perfis from "../../assets/Gestao_de_perfis.svg";
-import modulos from "../../assets/Gestao_de_modulos.svg";
-import transacoes from "../../assets/Gestao_de_transacoes.svg";
-import funcoes from "../../assets/Gestao_de_funcoes.svg";
-import logout from "../../assets/Logout.svg";
+
+import {
+  RiFileExcel2Line,
+  RiHome3Line,
+  RiUser3Line,
+  RiUserSettingsLine,
+  RiToolsFill,
+  RiFolderSettingsLine,
+  RiFileSettingsLine,
+  RiLogoutBoxLine,
+} from "react-icons/ri";
 import { useAuth } from "../../hooks/auth";
 import { useNavigate } from "react-router-dom";
 export function MenuMobileModal() {
@@ -28,31 +32,35 @@ export function MenuMobileModal() {
         </CloseButton>
         <div id="mobile">
           <button onClick={() => navigate("/")}>
-            <img src={home} alt="" />
+            <RiHome3Line size={48} />
             Home
           </button>
           <button onClick={() => navigate("/user")}>
-            <img src={users} alt="" />
+            <RiUser3Line size={48} />
             Gestão de usuários
           </button>
           <button onClick={() => navigate("/profile")}>
-            <img src={perfis} alt="" />
+            <RiUserSettingsLine size={48} />
             Gestão de perfis
           </button>
           <button onClick={() => navigate("/module")}>
-            <img src={modulos} alt="" />
+            <RiToolsFill size={48} />
             Gestão de módulos
           </button>
           <button onClick={() => navigate("/transaction")}>
-            <img src={transacoes} alt="" />
+            <RiFolderSettingsLine size={48} />
             Gestão de transações
           </button>
           <button onClick={() => navigate("/function")}>
-            <img src={funcoes} alt="" />
+            <RiFileSettingsLine size={48} />
             Gestão de funcões
           </button>
-          <button id="logout" onClick={handleLogout}>
-            <img src={logout} alt="" />
+          <button onClick={() => navigate("/reports")}>
+            <RiFileExcel2Line size={48} />
+            Relatórios
+          </button>
+          <button onClick={handleLogout}>
+            <RiLogoutBoxLine size={48} />
             Logout
           </button>
         </div>

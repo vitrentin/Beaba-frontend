@@ -29,14 +29,21 @@ export const Content = styled(Dialog.Content)`
     gap: 2rem;
     button {
       display: flex;
+      align-items: center;
       background-color: transparent;
       color: ${({ theme }) => theme.COLORS.BGBUTTON};
+      font-weight: 900;
+
+      font-size: 2.4rem;
       flex-direction: row;
       gap: 2rem;
       font-size: 2rem;
-    }
-    #logout {
-      margin-left: 2rem;
+      border: none;
+      cursor: pointer;
+
+      &:hover {
+        opacity: 0.8;
+      }
     }
   }
 `;

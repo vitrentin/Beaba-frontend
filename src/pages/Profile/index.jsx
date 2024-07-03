@@ -2,12 +2,10 @@ import { Section } from "../../components/Section";
 import { Button } from "../../components/Button";
 import { Input } from "../../components/Input";
 import { Container, Form, Pages } from "./styles";
-// import { FiMail, FiLock, FiUser } from "react-icons/fi";
+import { RiDeleteBin5Line, RiEdit2Line } from "react-icons/ri";
 import { Navigation } from "../../components/Navigation";
 import { useEffect, useState, useRef } from "react";
 import { api } from "../../services/api";
-import editar from "../../assets/Editar.svg";
-import excluir from "../../assets/Deletar.svg";
 import { EditProfileModal } from "../../components/EditProfileModal";
 import { DeleteProfileModal } from "../../components/DeleteProfileModal";
 import { SearchProfileForm } from "../../components/SearchProfileForm";
@@ -90,7 +88,7 @@ export function Profile() {
           "Content-Type": "application/json",
         },
       });
-      setProfiles(response.data);
+      setProfiles(response.data.profilesWithModules);
     } catch (error) {
       console.error("Erro ao buscar perfis:", error);
     }
@@ -147,12 +145,13 @@ export function Profile() {
                 type="text"
                 value={nome_perfil}
                 onChange={(event) => setNomePerfil(event.target.value)}
+                required
               />
             </div>
             <div>
               <h3>Módulo que deseja associar:</h3>
               <Input
-                placeholder="Digite o nome do módulo:"
+                placeholder="Opcional"
                 type="text"
                 value={nome_modulo}
                 onChange={(event) => setNomeModulo(event.target.value)}
@@ -191,7 +190,7 @@ export function Profile() {
                         <Dialog.Root>
                           <Dialog.Trigger asChild>
                             <button>
-                              <img src={editar} alt="Editar" />
+                              <RiEdit2Line size={36} />
                               Editar
                             </button>
                           </Dialog.Trigger>
@@ -205,7 +204,7 @@ export function Profile() {
                         <Dialog.Root>
                           <Dialog.Trigger asChild>
                             <button>
-                              <img src={excluir} alt="Excluir" />
+                              <RiDeleteBin5Line size={36} />
                               Excluir
                             </button>
                           </Dialog.Trigger>
@@ -225,7 +224,7 @@ export function Profile() {
                         <Dialog.Root>
                           <Dialog.Trigger asChild>
                             <button>
-                              <img src={editar} alt="Editar" />
+                              <RiEdit2Line size={36} />
                               Editar
                             </button>
                           </Dialog.Trigger>
@@ -239,7 +238,7 @@ export function Profile() {
                         <Dialog.Root>
                           <Dialog.Trigger asChild>
                             <button>
-                              <img src={excluir} alt="Excluir" />
+                              <RiDeleteBin5Line size={36} />
                               Excluir
                             </button>
                           </Dialog.Trigger>

@@ -55,11 +55,17 @@ export function EditTransactionModal({ transaction, onEdit }) {
           error.response.data.error === "Transaction already in use"
         ) {
           alert("Transação já está em uso. Por favor, use um nome diferente.");
+          setNomeTransacao(transaction.nome_transacao);
+          setDescricaoTransacao(transaction.descricao_transacao);
         } else {
           alert("Erro ao editar transação.");
+          setNomeTransacao(transaction.nome_transacao);
+          setDescricaoTransacao(transaction.descricao_transacao);
         }
       } else {
         alert("Erro ao editar transação.");
+        setNomeTransacao(transaction.nome_transacao);
+        setDescricaoTransacao(transaction.descricao_transacao);
       }
     }
   };
@@ -90,7 +96,12 @@ export function EditTransactionModal({ transaction, onEdit }) {
         <Dialog.Description>
           Preencha o dado que deseja editar
         </Dialog.Description>
-        <CloseButton>
+        <CloseButton
+          onClick={() => {
+            setNomeTransacao(transaction.nome_transacao);
+            setDescricaoTransacao(transaction.descricao_transacao);
+          }}
+        >
           <RiCloseFill size={24} />
         </CloseButton>
 

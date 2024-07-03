@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { RiShutDownLine } from "react-icons/ri";
+import { RiLogoutBoxLine } from "react-icons/ri";
 import { Container, Profile, Logout } from "./styles";
 import { useAuth } from "../../hooks/auth";
 import { api } from "../../services/api";
 import logoVerdeCard from "../../assets/verdeCardImage.svg";
+
 export function Header() {
   const { signOut, token } = useAuth();
   const handleLogout = () => {
@@ -44,7 +45,7 @@ export function Header() {
         </div>
       </Profile>
       <Logout onClick={handleLogout}>
-        <RiShutDownLine aria-label="Logout" />
+        <RiLogoutBoxLine aria-label="Logout" />
       </Logout>
     </Container>
   );

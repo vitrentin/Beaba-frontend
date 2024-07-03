@@ -1,16 +1,19 @@
-import home from "../../assets/Home.svg";
-import users from "../../assets/Gestao_de_usuario.svg";
-import perfis from "../../assets/Gestao_de_perfis.svg";
-import modulos from "../../assets/Gestao_de_modulos.svg";
-import transacoes from "../../assets/Gestao_de_transacoes.svg";
-import funcoes from "../../assets/Gestao_de_funcoes.svg";
-import logout from "../../assets/Logout.svg";
 import { useAuth } from "../../hooks/auth";
 import { Container } from "./styles";
 import { useNavigate } from "react-router-dom";
-import menuButton from "../../assets/Menu.svg";
 import * as Dialog from "@radix-ui/react-dialog";
 import { MenuMobileModal } from "../MenuMobileModal";
+import {
+  RiFileExcel2Line,
+  RiHome3Line,
+  RiUser3Line,
+  RiUserSettingsLine,
+  RiToolsFill,
+  RiFolderSettingsLine,
+  RiFileSettingsLine,
+  RiLogoutBoxLine,
+  RiMenuLine,
+} from "react-icons/ri";
 // eslint-disable-next-line react/prop-types
 export function Navigation({ title }) {
   const navigate = useNavigate();
@@ -23,32 +26,36 @@ export function Navigation({ title }) {
       <header>
         <div className="web">
           <button onClick={() => navigate("/")}>
-            <img src={home} alt="" />
-            Home
+            <RiHome3Line size={48} />
+            <span>Home</span>
           </button>
           <button onClick={() => navigate("/user")}>
-            <img src={users} alt="" />
-            Gestão de usuários
+            <RiUser3Line size={48} />
+            <span>Gestão de usuários</span>
           </button>
           <button onClick={() => navigate("/profile")}>
-            <img src={perfis} alt="" />
-            Gestão de perfis
+            <RiUserSettingsLine size={48} />
+            <span>Gestão de perfis</span>
           </button>
           <button onClick={() => navigate("/module")}>
-            <img src={modulos} alt="" />
-            Gestão de módulos
+            <RiToolsFill size={48} />
+            <span>Gestão de módulos</span>
           </button>
           <button onClick={() => navigate("/transaction")}>
-            <img src={transacoes} alt="" />
-            Gestão de transações
+            <RiFolderSettingsLine size={48} />
+            <span>Gestão de transações</span>
           </button>
           <button onClick={() => navigate("/function")}>
-            <img src={funcoes} alt="" />
-            Gestão de funcões
+            <RiFileSettingsLine size={48} />
+            <span>Gestão de funcões</span>
+          </button>
+          <button onClick={() => navigate("/reports")}>
+            <RiFileExcel2Line size={48} />
+            <span>Relatórios</span>
           </button>
           <button onClick={handleLogout}>
-            <img src={logout} alt="" />
-            Logout
+            <RiLogoutBoxLine size={48} />
+            <span>Logout</span>
           </button>
         </div>
 
@@ -57,7 +64,7 @@ export function Navigation({ title }) {
           <Dialog.Root>
             <Dialog.Trigger asChild>
               <button>
-                <img src={menuButton} alt="Menu" />
+                <RiMenuLine size={48} />
               </button>
             </Dialog.Trigger>
             <MenuMobileModal />

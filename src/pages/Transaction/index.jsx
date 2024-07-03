@@ -2,12 +2,10 @@ import { Section } from "../../components/Section";
 import { Button } from "../../components/Button";
 import { Input } from "../../components/Input";
 import { Container, Form, Pages } from "./styles";
-// import { FiMail, FiLock, FiUser } from "react-icons/fi";
+import { RiDeleteBin5Line, RiEdit2Line } from "react-icons/ri";
 import { Navigation } from "../../components/Navigation";
 import { useEffect, useState, useRef } from "react";
 import { api } from "../../services/api";
-import editar from "../../assets/Editar.svg";
-import excluir from "../../assets/Deletar.svg";
 import { EditTransactionModal } from "../../components/EditTransactionModal";
 import { DeleteTransactionModal } from "../../components/DeleteTransactionModal";
 import { SearchTransactionForm } from "../../components/SearchTransactionForm";
@@ -99,7 +97,8 @@ export function Transaction() {
           "Content-Type": "application/json",
         },
       });
-      setTransactions(response.data);
+      console.log(response.data.transactionsWithModules);
+      setTransactions(response.data.transactionsWithModules);
     } catch (error) {
       console.error("Erro ao buscar transações:", error);
     }
@@ -160,12 +159,13 @@ export function Transaction() {
                 type="text"
                 value={nome_transacao}
                 onChange={(event) => setNomeTransacao(event.target.value)}
+                required
               />
             </div>
             <div>
               <h3>Descrição da transação:</h3>
               <Input
-                placeholder="Digite a descrição da transação:"
+                placeholder="Opcional"
                 type="text"
                 value={descricao_transacao}
                 onChange={(event) => setDescricaoTransacao(event.target.value)}
@@ -174,7 +174,7 @@ export function Transaction() {
             <div>
               <h3>Nome do módulo associado:</h3>
               <Input
-                placeholder="Digite o nome do módulo:"
+                placeholder="Opcional"
                 type="text"
                 value={nome_modulo_associado}
                 onChange={(event) => setNomeModuloAssociado(event.target.value)}
@@ -216,7 +216,7 @@ export function Transaction() {
                         <Dialog.Root>
                           <Dialog.Trigger asChild>
                             <button>
-                              <img src={editar} alt="Editar" />
+                              <RiEdit2Line size={36} />
                               Editar
                             </button>
                           </Dialog.Trigger>
@@ -230,7 +230,7 @@ export function Transaction() {
                         <Dialog.Root>
                           <Dialog.Trigger asChild>
                             <button>
-                              <img src={excluir} alt="Excluir" />
+                              <RiDeleteBin5Line size={36} />
                               Excluir
                             </button>
                           </Dialog.Trigger>
@@ -251,7 +251,7 @@ export function Transaction() {
                         <Dialog.Root>
                           <Dialog.Trigger asChild>
                             <button>
-                              <img src={editar} alt="Editar" />
+                              <RiEdit2Line size={36} />
                               Editar
                             </button>
                           </Dialog.Trigger>
@@ -265,7 +265,7 @@ export function Transaction() {
                         <Dialog.Root>
                           <Dialog.Trigger asChild>
                             <button>
-                              <img src={excluir} alt="Excluir" />
+                              <RiDeleteBin5Line size={36} />
                               Excluir
                             </button>
                           </Dialog.Trigger>

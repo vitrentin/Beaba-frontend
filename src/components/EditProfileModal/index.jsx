@@ -51,11 +51,14 @@ export function EditProfileModal({ profile, onEdit }) {
           error.response.data.error === "Profile already in use"
         ) {
           alert("Perfil já está em uso. Por favor, use um nome diferente.");
+          setNomePerfil(profile.nome_perfil);
         } else {
           alert("Erro ao editar perfil.");
+          setNomePerfil(profile.nome_perfil);
         }
       } else {
         alert("Erro ao editar perfil.");
+        setNomePerfil(profile.nome_perfil);
       }
     }
   };
@@ -83,7 +86,11 @@ export function EditProfileModal({ profile, onEdit }) {
         <Dialog.Description>
           Preencha o dado que deseja editar
         </Dialog.Description>
-        <CloseButton>
+        <CloseButton
+          onClick={() => {
+            setNomePerfil(profile.nome_perfil);
+          }}
+        >
           <RiCloseFill size={24} />
         </CloseButton>
 

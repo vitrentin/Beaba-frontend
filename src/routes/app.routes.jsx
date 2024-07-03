@@ -6,6 +6,7 @@ import { Profile } from "../pages/Profile";
 import { Module } from "../pages/Module";
 import { Transaction } from "../pages/Transaction";
 import { Function } from "../pages/Function";
+import { Reports } from "../pages/Reports";
 export function AppRoutes() {
   return (
     <Routes>
@@ -15,6 +16,8 @@ export function AppRoutes() {
       <Route path="/module" element={<Module />} />
       <Route path="/transaction" element={<Transaction />} />
       <Route path="/function" element={<Function />} />
+      <Route path="/reports" element={<Reports />} />
+
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>
   );

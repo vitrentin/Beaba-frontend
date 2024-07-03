@@ -2,12 +2,16 @@ import { Section } from "../../components/Section";
 import { Button } from "../../components/Button";
 import { Input } from "../../components/Input";
 import { Container, Form, Pages } from "./styles";
-import { FiMail, FiLock, FiUser } from "react-icons/fi";
 import { Navigation } from "../../components/Navigation";
 import { useEffect, useState, useRef } from "react";
 import { api } from "../../services/api";
-import editar from "../../assets/Editar.svg";
-import excluir from "../../assets/Deletar.svg";
+import {
+  RiDeleteBin5Line,
+  RiEdit2Line,
+  RiMailLine,
+  RiLock2Line,
+  RiUser3Line,
+} from "react-icons/ri";
 import { EditUserModal } from "../../components/EditUserModal";
 import { DeleteUserModal } from "../../components/DeleteUserModal";
 import { SearchUserForm } from "../../components/SearchUserForm";
@@ -94,7 +98,7 @@ export function User() {
           "Content-Type": "application/json",
         },
       });
-      setPerfis(response.data);
+      setPerfis(response.data.profilesWithModules);
     } catch (error) {
       console.error("Erro ao buscar perfis:", error);
     }
@@ -108,8 +112,7 @@ export function User() {
           "Content-Type": "application/json",
         },
       });
-      // console.log("Dados dos usuários:", response.data);
-      setUsers(response.data);
+      setUsers(response.data.users);
     } catch (error) {
       console.error("Erro ao buscar usuários:", error);
     }
@@ -158,9 +161,10 @@ export function User() {
               <Input
                 placeholder="Digite um nome:"
                 type="text"
-                icon={FiUser}
+                icon={RiUser3Line}
                 value={nome_usuario}
                 onChange={(event) => setNomeUsuario(event.target.value)}
+                required
               />
             </div>
             <div>
@@ -168,9 +172,10 @@ export function User() {
               <Input
                 placeholder="Digite um email:"
                 type="email"
-                icon={FiMail}
+                icon={RiMailLine}
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
+                required
               />
             </div>
             <div>
@@ -178,9 +183,10 @@ export function User() {
               <Input
                 placeholder="Digite uma senha:"
                 type="password"
-                icon={FiLock}
+                icon={RiLock2Line}
                 value={senha}
                 onChange={(event) => setSenha(event.target.value)}
+                required
               />
             </div>
             <div>
@@ -232,7 +238,7 @@ export function User() {
                         <Dialog.Root>
                           <Dialog.Trigger asChild>
                             <button>
-                              <img src={editar} alt="Editar" />
+                              <RiEdit2Line size={36} />
                               Editar
                             </button>
                           </Dialog.Trigger>
@@ -243,7 +249,7 @@ export function User() {
                         <Dialog.Root>
                           <Dialog.Trigger asChild>
                             <button>
-                              <img src={excluir} alt="Excluir" />
+                              <RiDeleteBin5Line size={36} />
                               Excluir
                             </button>
                           </Dialog.Trigger>
@@ -268,7 +274,7 @@ export function User() {
                         <Dialog.Root>
                           <Dialog.Trigger asChild>
                             <button>
-                              <img src={editar} alt="Editar" />
+                              <RiEdit2Line size={36} />
                               Editar
                             </button>
                           </Dialog.Trigger>
@@ -279,7 +285,7 @@ export function User() {
                         <Dialog.Root>
                           <Dialog.Trigger asChild>
                             <button>
-                              <img src={excluir} alt="Excluir" />
+                              <RiDeleteBin5Line size={36} />
                               Excluir
                             </button>
                           </Dialog.Trigger>
