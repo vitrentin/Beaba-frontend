@@ -97,7 +97,6 @@ export function Transaction() {
           "Content-Type": "application/json",
         },
       });
-      console.log(response.data.transactionsWithModules);
       setTransactions(response.data.transactionsWithModules);
     } catch (error) {
       console.error("Erro ao buscar transações:", error);

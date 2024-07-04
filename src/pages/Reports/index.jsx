@@ -212,47 +212,49 @@ export function Reports() {
     <Container>
       <Navigation title="Relatórios" />
       <Section title="Relatórios:">
-        <div className="quantidade">
-          <div className="relatorios">
-            <p>Quantidade de Usuários: {quantidadeUsuarios}</p>
-            <Button
-              id="spaceU"
-              title="Gerar Relatório de Usuários"
-              onClick={generateUserReport}
-            />
-          </div>
-          <div className="relatorios">
-            <p>Quantidade de Perfis: {quantidadePerfis}</p>
-            <Button
-              id="spaceP"
-              title="Gerar Relatório de Perfis"
-              onClick={generateProfileReport}
-            />
-          </div>
-          <div className="relatorios">
-            <p>Quantidade de Módulos: {quantidadeModulos}</p>
-            <Button
-              id="spaceM"
-              title="Gerar Relatório de Módulos"
-              onClick={generateModuleReport}
-            />
-          </div>
-          <div className="relatorios">
-            <p>Quantidade de Transações: {quantidadeTransacoes}</p>
-            <Button
-              id="spaceT"
-              title="Gerar Relatório de Transações"
-              onClick={generateTransactionReport}
-            />
-          </div>
-          <div className="relatorios">
-            <p>Quantidade de Funções: {quantidadeFuncoes}</p>
-            <Button
-              id="spaceF"
-              title="Gerar Relatório de Funções"
-              onClick={generateFunctionReport}
-            />
-          </div>
+        <div className="tabela">
+          <table className="responsivo">
+            <thead>
+              <tr>
+                <th>Quantidade</th>
+                <th>Gerar Formulário</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Usuários: {quantidadeUsuarios}</td>
+                <td>
+                  <button onClick={generateUserReport}>Usuários</button>
+                </td>
+              </tr>
+              <tr>
+                <td>Perfis: {quantidadePerfis}</td>
+                <td>
+                  <button onClick={generateProfileReport}>Perfis</button>
+                </td>
+              </tr>
+              <tr>
+                <td>Módulos: {quantidadeModulos}</td>
+                <td>
+                  <button onClick={generateModuleReport}>Módulos</button>
+                </td>
+              </tr>
+              <tr>
+                <td>Transações: {quantidadeTransacoes}</td>
+                <td>
+                  <button onClick={generateTransactionReport}>
+                    Transações
+                  </button>
+                </td>
+              </tr>
+              <tr>
+                <td>Funções: {quantidadeFuncoes}</td>
+                <td>
+                  <button onClick={generateFunctionReport}>Funções</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </Section>
     </Container>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FiMail, FiLock } from "react-icons/fi";
 
 import { useAuth } from "../../hooks/auth";
@@ -9,8 +9,11 @@ import { Container, Form } from "./styles";
 import Logo from "../../assets/verdeCardImage.svg";
 import { EsqueciMinhaSenha } from "../../components/EsqueciMinhaSenhaModal";
 import * as Dialog from "@radix-ui/react-dialog";
-document.title = `Login`;
+
 export function Login() {
+  useEffect(() => {
+    document.title = `Login`;
+  }, []);
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
 
