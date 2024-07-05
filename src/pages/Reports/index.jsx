@@ -7,8 +7,9 @@ import { useEffect, useState } from "react";
 import { Button } from "../../components/Button";
 
 export function Reports() {
-  document.title = `Relatórios`;
-
+  useEffect(() => {
+    document.title = `Relatórios`;
+  }, []);
   const [quantidadeUsuarios, setQuantidadeUsuarios] = useState(0);
   const [quantidadePerfis, setQuantidadePerfis] = useState(0);
   const [quantidadeModulos, setQuantidadeModulos] = useState(0);

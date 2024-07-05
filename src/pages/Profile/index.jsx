@@ -10,14 +10,22 @@ import { EditProfileModal } from "../../components/EditProfileModal";
 import { DeleteProfileModal } from "../../components/DeleteProfileModal";
 import { SearchProfileForm } from "../../components/SearchProfileForm";
 import * as Dialog from "@radix-ui/react-dialog";
+import { toast } from "sonner";
 
 const PROFILES_PER_PAGE = 5;
 
 export function Profile() {
-  document.title = `Gestão de perfis`;
+  useEffect(() => {
+    document.title = `Gestão de perfis`;
+  }, []);
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const modalRef = useRef(null);
+  const [nome_perfil, setNomePerfil] = useState("");
+  const [nome_modulo, setNomeModulo] = useState("");
+  const [profiles, setProfiles] = useState([]);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [searchResults, setSearchResults] = useState([]);
 
   function handleFormOpen() {
     setIsFormOpen(!isFormOpen);
@@ -26,24 +34,21 @@ export function Profile() {
   useEffect(() => {
     if (isFormOpen) {
       modalRef?.current.focus();
+      setNomePerfil("");
+      setNomeModulo("");
     }
   }, [isFormOpen]);
 
-  const [nome_perfil, setNomePerfil] = useState("");
-  const [nome_modulo, setNomeModulo] = useState("");
-
-  const [profiles, setProfiles] = useState([]);
-  const [currentPage, setCurrentPage] = useState(0);
-  const [searchResults, setSearchResults] = useState([]);
-
   function handleSignUp() {
     if (!nome_perfil) {
-      return alert("Preencha pelo menos o nome do perfil!");
+      toast.error("Preencha pelo menos o nome do perfil!");
+      return;
     }
 
     const token = localStorage.getItem("@beaba:token");
     if (!token) {
-      return alert("Token não encontrado. Faça login novamente.");
+      toast.error("Token não encontrado. Faça login novamente.");
+      return;
     }
 
     const profileData = { nome_perfil, nome_modulo: nome_modulo || undefined };
@@ -57,25 +62,29 @@ export function Profile() {
         },
       })
       .then(() => {
-        alert("Perfil cadastrado e/ou módulo associado com sucesso!");
+        toast.success("Perfil cadastrado e/ou módulo associado com sucesso!");
         fetchProfiles();
         setNomeModulo("");
       })
       .catch((error) => {
         if (error.response) {
           console.error("Erro na resposta do servidor:", error.response.data);
-          alert(
+          toast.error(
             error.response.data.message ||
               "Erro ao cadastrar perfil e/ou associar módulo"
           );
         } else {
           console.error("Erro na requisição:", error.message);
-          alert("Não foi possível cadastrar e/ou associar");
+          toast.error("Não foi possível cadastrar e/ou associar");
         }
       });
   }
 
   useEffect(() => {
+    const storedPage = localStorage.getItem("currentPageProfile");
+    if (storedPage) {
+      setCurrentPage(Number(storedPage));
+    }
     fetchProfiles();
   }, []);
 
@@ -95,20 +104,33 @@ export function Profile() {
   };
 
   const offset = currentPage * PROFILES_PER_PAGE;
-  const currentPageProfiles = profiles.slice(
-    offset,
-    offset + PROFILES_PER_PAGE
+  const currentPageProfiles =
+    searchResults.length > 0
+      ? searchResults.slice(offset, offset + PROFILES_PER_PAGE)
+      : profiles.slice(offset, offset + PROFILES_PER_PAGE);
+  const pageCount = Math.ceil(
+    (searchResults.length > 0 ? searchResults.length : profiles.length) /
+      PROFILES_PER_PAGE
   );
-  const pageCount = Math.ceil(profiles.length / PROFILES_PER_PAGE);
 
   const handlePageClick = ({ selected }) => {
     setCurrentPage(selected);
+    localStorage.setItem("currentPageProfile", selected);
   };
+
   const handleDeleteProfile = (deletedProfileId) => {
     setProfiles(
       profiles.filter((profile) => profile.id_perfil !== deletedProfileId)
     );
+    if (searchResults.length > 0) {
+      setSearchResults(
+        searchResults.filter(
+          (profile) => profile.id_perfil !== deletedProfileId
+        )
+      );
+    }
   };
+
   const handleEditProfile = (editProfileId, updatedProfile) => {
     setProfiles((prevProfiles) =>
       prevProfiles.map((profile) =>
@@ -117,9 +139,39 @@ export function Profile() {
           : profile
       )
     );
+    if (searchResults.length > 0) {
+      setSearchResults((prevResults) =>
+        prevResults.map((profile) =>
+          profile.id_perfil === editProfileId
+            ? { ...profile, ...updatedProfile }
+            : profile
+        )
+      );
+    }
   };
+
+  const handleModulesUpdate = (profileId, updatedModules) => {
+    setProfiles((prevProfiles) =>
+      prevProfiles.map((profile) =>
+        profile.id_perfil === profileId
+          ? { ...profile, perfil_modulo: updatedModules }
+          : profile
+      )
+    );
+    if (searchResults.length > 0) {
+      setSearchResults((prevResults) =>
+        prevResults.map((profile) =>
+          profile.id_perfil === profileId
+            ? { ...profile, perfil_modulo: updatedModules }
+            : profile
+        )
+      );
+    }
+  };
+
   const handleSearchResults = (results) => {
     setSearchResults(results);
+    setCurrentPage(0);
   };
 
   return (
@@ -157,7 +209,12 @@ export function Profile() {
                 onChange={(event) => setNomeModulo(event.target.value)}
               />
             </div>
-            <Button id="space" title="Cadastrar" onClick={handleSignUp} />
+            <Button
+              id="space"
+              title="Cadastrar"
+              onClick={handleSignUp}
+              aria-label="Cadastrar Perfil"
+            />
           </Form>
         )}
 
@@ -177,79 +234,45 @@ export function Profile() {
               </tr>
             </thead>
             <tbody>
-              {searchResults.length > 0
-                ? searchResults.map((profile) => (
-                    <tr key={profile.id_perfil}>
-                      <td>{profile.nome_perfil}</td>
-                      <td>
-                        {profile.perfil_modulo
-                          .map((modulo) => modulo.modulo.nome_modulo)
-                          .join(", ")}
-                      </td>
-                      <td>
-                        <Dialog.Root>
-                          <Dialog.Trigger asChild>
-                            <button>
-                              <RiEdit2Line size={36} />
-                              Editar
-                            </button>
-                          </Dialog.Trigger>
-                          <EditProfileModal
-                            profile={profile}
-                            onEdit={handleEditProfile}
-                          />
-                        </Dialog.Root>
-                      </td>
-                      <td>
-                        <Dialog.Root>
-                          <Dialog.Trigger asChild>
-                            <button>
-                              <RiDeleteBin5Line size={36} />
-                              Excluir
-                            </button>
-                          </Dialog.Trigger>
-                          <DeleteProfileModal
-                            profile={profile}
-                            onDelete={handleDeleteProfile}
-                          />
-                        </Dialog.Root>
-                      </td>
-                    </tr>
-                  ))
-                : currentPageProfiles.map((profile) => (
-                    <tr key={profile.id_perfil}>
-                      <td>{profile.nome_perfil}</td>
-                      <td>{profile.modules}</td>
-                      <td>
-                        <Dialog.Root>
-                          <Dialog.Trigger asChild>
-                            <button>
-                              <RiEdit2Line size={36} />
-                              Editar
-                            </button>
-                          </Dialog.Trigger>
-                          <EditProfileModal
-                            profile={profile}
-                            onEdit={handleEditProfile}
-                          />
-                        </Dialog.Root>
-                      </td>
-                      <td>
-                        <Dialog.Root>
-                          <Dialog.Trigger asChild>
-                            <button>
-                              <RiDeleteBin5Line size={36} />
-                              Excluir
-                            </button>
-                          </Dialog.Trigger>
-                          <DeleteProfileModal
-                            profile={profile}
-                            onDelete={handleDeleteProfile}
-                          />
-                        </Dialog.Root>
-                      </td>
-                    </tr>
-                  ))}
+              {currentPageProfiles.map((profile) => (
+                <tr key={profile.id_perfil}>
+                  <td>{profile.nome_perfil}</td>
+                  <td>
+                    {profile.perfil_modulo
+                      .map((modulo) => modulo.modulo.nome_modulo)
+                      .join(", ")}
+                  </td>
+                  <td>
+                    <Dialog.Root>
+                      <Dialog.Trigger asChild>
+                        <button>
+                          <RiEdit2Line size={36} />
+                          Editar
+                        </button>
+                      </Dialog.Trigger>
+                      <EditProfileModal
+                        profile={profile}
+                        onEdit={handleEditProfile}
+                        onModulesUpdate={handleModulesUpdate}
+                      />
+                    </Dialog.Root>
+                  </td>
+                  <td>
+                    <Dialog.Root>
+                      <Dialog.Trigger asChild>
+                        <button>
+                          <RiDeleteBin5Line size={36} />
+                          Excluir
+                        </button>
+                      </Dialog.Trigger>
+                      <DeleteProfileModal
+                        profile={profile}
+                        onDelete={handleDeleteProfile}
+                      />
+                    </Dialog.Root>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>

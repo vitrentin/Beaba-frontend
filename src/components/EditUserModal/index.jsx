@@ -7,6 +7,7 @@ import { Button } from "../Button";
 import { Input } from "../Input";
 import { useState, useEffect } from "react";
 import { api } from "../../services/api";
+import { toast } from "sonner";
 
 export function EditUserModal({ user, onEdit }) {
   const [nomeUsuario, setNomeUsuario] = useState("");
@@ -16,13 +17,15 @@ export function EditUserModal({ user, onEdit }) {
   const [perfis, setPerfis] = useState([]);
   const [originalNomeUsuario, setOriginalNomeUsuario] = useState("");
   const [originalEmail, setOriginalEmail] = useState("");
+  const [originalPerfilId, setOriginalPerfilId] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   useEffect(() => {
     setNomeUsuario(user.nome_usuario);
     setEmail(user.email);
+    setPerfilId(user.perfil_id);
     setOriginalNomeUsuario(user.nome_usuario);
     setOriginalEmail(user.email);
-
+    setOriginalPerfilId(user.perfil_id);
     fetchPerfis();
   }, [user]);
 
@@ -69,7 +72,7 @@ export function EditUserModal({ user, onEdit }) {
         }
       );
       onEdit(user.id_usuario, updatedFields);
-      alert("Usuário editado com sucesso!");
+      toast.success("Usuário editado com sucesso!");
     } catch (error) {
       console.error("Erro ao editar usuário:", error);
       if (error.response) {
@@ -77,25 +80,33 @@ export function EditUserModal({ user, onEdit }) {
           error.response.status === 400 &&
           error.response.data.error === "Email already in use"
         ) {
-          alert("Email já está em uso. Por favor, use um email diferente.");
+          toast.error(
+            "Email já está em uso. Por favor, use um email diferente."
+          );
           setEmail(originalEmail);
           setNomeUsuario(originalNomeUsuario);
+          setPerfilId(originalPerfilId);
         } else if (
           error.response.status === 404 &&
           error.response.data.error === "Email not found"
         ) {
           setEmail(originalEmail);
           setNomeUsuario(originalNomeUsuario);
-          alert("Email não encontrado. Por favor, insira um email válido.");
+          setPerfilId(originalPerfilId);
+          toast.error(
+            "Email não encontrado. Por favor, insira um email válido."
+          );
         } else {
           setEmail(originalEmail);
           setNomeUsuario(originalNomeUsuario);
-          alert("Erro ao editar usuário.");
+          setPerfilId(originalPerfilId);
+          toast.error("Erro ao editar usuário.");
         }
       } else {
         setEmail(user.email);
         setNomeUsuario(user.nome_usuario);
-        alert("Erro ao editar usuário.");
+        setPerfilId(originalPerfilId);
+        toast.error("Erro ao editar usuário.");
       }
     }
   };
@@ -113,6 +124,7 @@ export function EditUserModal({ user, onEdit }) {
           onClick={() => {
             setEmail(originalEmail);
             setNomeUsuario(originalNomeUsuario);
+            setPerfilId(originalPerfilId);
           }}
         >
           <RiCloseFill size={24} />

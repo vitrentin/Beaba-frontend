@@ -3,6 +3,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { RiCloseFill } from "react-icons/ri";
 import { CloseButton, Content, Overlay } from "./styles";
 import { api } from "../../services/api";
+import { toast } from "sonner";
 export function DeleteModuleModal({ module, onDelete }) {
   const handleDelete = async () => {
     try {
@@ -14,10 +15,10 @@ export function DeleteModuleModal({ module, onDelete }) {
         },
       });
       onDelete(module.id_modulo);
-      alert("Módulo excluído com sucesso!");
+      toast.success("Módulo excluído com sucesso!");
     } catch (error) {
       console.error("Erro ao deletar módulo:", error);
-      alert("Erro ao excluir módulo");
+      toast.error("Erro ao excluir módulo");
     }
   };
   return (

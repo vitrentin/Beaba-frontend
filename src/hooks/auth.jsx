@@ -1,6 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useEffect } from "react";
 import { api } from "../services/api";
+import { toast } from "sonner";
 
 export const AuthContext = createContext({});
 
@@ -23,13 +24,13 @@ function AuthProvider({ children }) {
         console.log("Token:", token);
       } else {
         console.error("Resposta do servidor inválida", response.data);
-        alert("Resposta do servidor inválida");
+        toast.error("Resposta do servidor inválida");
       }
     } catch (error) {
       if (error.response && error.response.data) {
-        alert(error.response.data.message);
+        toast.error(error.response.data.message);
       } else {
-        alert("Não foi possível entrar");
+        toast.error("Não foi possível entrar");
       }
     }
   }

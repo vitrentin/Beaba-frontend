@@ -3,6 +3,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { RiCloseFill } from "react-icons/ri";
 import { CloseButton, Content, Overlay } from "./styles";
 import { api } from "../../services/api";
+import { toast } from "sonner";
 export function DeleteProfileModal({ profile, onDelete }) {
   const handleDelete = async () => {
     try {
@@ -14,10 +15,10 @@ export function DeleteProfileModal({ profile, onDelete }) {
         },
       });
       onDelete(profile.id_perfil);
-      alert("Perfil excluído com sucesso!");
+      toast.success("Perfil excluído com sucesso!");
     } catch (error) {
       console.error("Erro ao deletar perfil:", error);
-      alert("Erro ao excluir perfil");
+      toast.error("Erro ao excluir perfil");
     }
   };
   return (

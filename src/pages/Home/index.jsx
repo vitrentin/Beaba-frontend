@@ -1,9 +1,11 @@
 import { Button } from "../../components/Button";
 import { Header } from "../../components/Header";
 import { Container } from "./styles";
+import { useEffect } from "react";
 export function Home() {
-  document.title = `Home`;
-
+  useEffect(() => {
+    document.title = `Home`;
+  }, []);
   return (
     <Container>
       <Header />

@@ -3,6 +3,7 @@ import { MagnifyingGlass } from "phosphor-react";
 import { SearchFormContainer } from "./styles";
 import { useState } from "react";
 import { searchUsers } from "../../services/api";
+import { toast } from "sonner";
 
 export function SearchUserForm({ onSearchResults, fetchUsers }) {
   const [searchUser, setSearchUser] = useState("");
@@ -21,13 +22,15 @@ export function SearchUserForm({ onSearchResults, fetchUsers }) {
         onSearchResults(results);
 
         if (results.length === 0) {
-          alert("Nenhum usuário encontrado com esse nome ou email.");
+          toast.error("Nenhum usuário encontrado com esse nome ou email.");
           onSearchResults([]);
         }
       }
     } catch (error) {
       console.error("Erro ao buscar usuários:", error);
-      alert("Erro ao buscar usuários. Por favor, tente novamente mais tarde.");
+      toast.error(
+        "Erro ao buscar usuários. Por favor, tente novamente mais tarde."
+      );
     }
   };
 

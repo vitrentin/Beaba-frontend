@@ -3,6 +3,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { RiCloseFill } from "react-icons/ri";
 import { CloseButton, Content, Overlay } from "./styles";
 import { api } from "../../services/api";
+import { toast } from "sonner";
 export function DeleteTransactionModal({ transaction, onDelete }) {
   const handleDelete = async () => {
     try {
@@ -14,10 +15,10 @@ export function DeleteTransactionModal({ transaction, onDelete }) {
         },
       });
       onDelete(transaction.id_transacao);
-      alert("Transação excluída com sucesso!");
+      toast.success("Transação excluída com sucesso!");
     } catch (error) {
       console.error("Erro ao deletar transação:", error);
-      alert("Erro ao excluir transação");
+      toast.error("Erro ao excluir transação");
     }
   };
   return (

@@ -7,6 +7,7 @@ import { Button } from "../Button";
 import { Input } from "../Input";
 import { useState } from "react";
 import { api } from "../../services/api";
+import { toast } from "sonner";
 
 export function EditModuleModal({ module, onEdit }) {
   const [nomeModulo, setNomeModulo] = useState(module.nome_modulo);
@@ -38,7 +39,7 @@ export function EditModuleModal({ module, onEdit }) {
       );
       console.log("Response: ", response);
       onEdit(module.id_modulo, updatedFields);
-      alert("Módulo editado com sucesso!");
+      toast.success("Módulo editado com sucesso!");
     } catch (error) {
       console.error("Erro ao editar módulo:", error);
       if (error.response) {
@@ -46,16 +47,18 @@ export function EditModuleModal({ module, onEdit }) {
           error.response.status === 400 &&
           error.response.data.error === "Module already in use"
         ) {
-          alert("Módulo já está em uso. Por favor, use um nome diferente.");
+          toast.error(
+            "Módulo já está em uso. Por favor, use um nome diferente."
+          );
           setNomeModulo(module.nome_modulo);
           setDescricaoModulo(module.descricao_modulo);
         } else {
-          alert("Erro ao editar módulo.");
+          toast.error("Erro ao editar módulo.");
           setNomeModulo(module.nome_modulo);
           setDescricaoModulo(module.descricao_modulo);
         }
       } else {
-        alert("Erro ao editar módulo.");
+        toast.error("Erro ao editar módulo.");
         setNomeModulo(module.nome_modulo);
         setDescricaoModulo(module.descricao_modulo);
       }

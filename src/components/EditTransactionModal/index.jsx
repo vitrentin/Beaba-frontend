@@ -8,17 +8,20 @@ import { Input } from "../Input";
 import { useState, useEffect } from "react";
 import { api } from "../../services/api";
 import { Tag } from "../Tag";
+import { toast } from "sonner";
 
-export function EditTransactionModal({ transaction, onEdit }) {
+export function EditTransactionModal({ transaction, onEdit, onModulesUpdate }) {
   const [nomeTransacao, setNomeTransacao] = useState("");
   const [descricaoTransacao, setDescricaoTransacao] = useState("");
   const [modules, setModules] = useState([]);
+  const [removedModules, setRemovedModules] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
   useEffect(() => {
     if (transaction) {
       setNomeTransacao(transaction.nome_transacao || "");
       setDescricaoTransacao(transaction.descricao_transacao || "");
       setModules(transaction.transacao_modulo || []);
+      setRemovedModules([]);
     }
   }, [transaction]);
 
@@ -34,19 +37,41 @@ export function EditTransactionModal({ transaction, onEdit }) {
 
     try {
       const token = localStorage.getItem("@beaba:token");
-      const response = await api.put(
-        `/transactions/${transaction.id_transacao}`,
-        updatedFields,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
+      // Update transaction name if changed
+      if (nomeTransacao !== transaction.nome_transacao) {
+        await api.put(
+          `/transactions/${transaction.id_transacao}`,
+          updatedFields,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+      }
+
+      // Remove modules
+      await Promise.all(
+        removedModules.map((moduleId) =>
+          api.delete(
+            `/transactions/${transaction.id_transacao}/modules/${moduleId}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+            }
+          )
+        )
       );
-      console.log("Response: ", response.data);
+
       onEdit(transaction.id_transacao, updatedFields);
-      alert("Transação editada com sucesso!");
+      onModulesUpdate(transaction.id_transacao, modules);
+      toast.success("Transação editada com sucesso!");
+
+      // Clear removed modules list after successful edit
+      setRemovedModules([]);
     } catch (error) {
       console.error("Erro ao editar transação:", error);
       if (error.response) {
@@ -54,39 +79,31 @@ export function EditTransactionModal({ transaction, onEdit }) {
           error.response.status === 400 &&
           error.response.data.error === "Transaction already in use"
         ) {
-          alert("Transação já está em uso. Por favor, use um nome diferente.");
+          toast.error(
+            "Transação já está em uso. Por favor, use um nome diferente."
+          );
           setNomeTransacao(transaction.nome_transacao);
           setDescricaoTransacao(transaction.descricao_transacao);
         } else {
-          alert("Erro ao editar transação.");
+          toast.error("Erro ao editar transação.");
           setNomeTransacao(transaction.nome_transacao);
           setDescricaoTransacao(transaction.descricao_transacao);
         }
       } else {
-        alert("Erro ao editar transação.");
+        toast.error("Erro ao editar transação.");
         setNomeTransacao(transaction.nome_transacao);
         setDescricaoTransacao(transaction.descricao_transacao);
       }
     }
   };
-  const handleRemoveModule = async (moduleId) => {
-    try {
-      const token = localStorage.getItem("@beaba:token");
-      await api.delete(
-        `/transactions/${transaction.id_transacao}/modules/${moduleId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      setModules(modules.filter((mod) => mod.modulo.id_modulo !== moduleId));
-    } catch (error) {
-      console.error("Erro ao remover módulo:", error);
-      alert("Erro ao remover módulo.");
-    }
+
+  const handleRemoveModule = (moduleId) => {
+    setRemovedModules((prev) => [...prev, moduleId]);
+    setModules((prev) =>
+      prev.filter((mod) => mod.modulo.id_modulo !== moduleId)
+    );
   };
+
   return (
     <Dialog.Portal>
       <Overlay />

@@ -10,18 +10,16 @@ import { api } from "../../services/api";
 import { Tag } from "../Tag";
 import { toast } from "sonner";
 
-export function EditFunctionModal({ functions, onEdit, onModulesUpdate }) {
+export function EditFunctionModal({ functions, onEdit }) {
   const [nomeFuncao, setNomeFuncao] = useState("");
   const [descricaoFuncao, setDescricaoFuncao] = useState("");
   const [modules, setModules] = useState([]);
-  const [removedModules, setRemovedModules] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
   useEffect(() => {
     if (functions) {
       setNomeFuncao(functions.nome_funcao || "");
       setDescricaoFuncao(functions.descricao_funcao || "");
       setModules(functions.funcao_modulo || []);
-      setRemovedModules([]);
     }
   }, [functions]);
 
@@ -37,34 +35,19 @@ export function EditFunctionModal({ functions, onEdit, onModulesUpdate }) {
 
     try {
       const token = localStorage.getItem("@beaba:token");
-      // Update function name if changed
-      if (nomeFuncao !== functions.nome_funcao) {
-        await api.put(`/functions/${functions.id_funcao}`, updatedFields, {
+      const response = await api.put(
+        `/functions/${functions.id_funcao}`,
+        updatedFields,
+        {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-        });
-      }
-
-      // Remove modules
-      await Promise.all(
-        removedModules.map((moduleId) =>
-          api.delete(`/functions/${functions.id_funcao}/modules/${moduleId}`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          })
-        )
+        }
       );
-
+      console.log("Response: ", response);
       onEdit(functions.id_funcao, updatedFields);
-      onModulesUpdate(functions.id_funcao, modules);
       toast.success("Função editada com sucesso!");
-
-      // Clear removed modules list after successful edit
-      setRemovedModules([]);
     } catch (error) {
       console.error("Erro ao editar função:", error);
       if (error.response) {
@@ -76,25 +59,33 @@ export function EditFunctionModal({ functions, onEdit, onModulesUpdate }) {
             "Função já está em uso. Por favor, use um nome diferente."
           );
           setNomeFuncao(functions.nome_funcao);
-          setDescricaoFuncao(functions.descricao_funcao);
         } else {
           toast.error("Erro ao editar função.");
           setNomeFuncao(functions.nome_funcao);
-          setDescricaoFuncao(functions.descricao_funcao);
         }
       } else {
         toast.error("Erro ao editar função.");
         setNomeFuncao(functions.nome_funcao);
-        setDescricaoFuncao(functions.descricao_funcao);
       }
     }
   };
-
-  const handleRemoveModule = (moduleId) => {
-    setRemovedModules((prev) => [...prev, moduleId]);
-    setModules((prev) =>
-      prev.filter((mod) => mod.modulo.id_modulo !== moduleId)
-    );
+  const handleRemoveModule = async (moduleId) => {
+    try {
+      const token = localStorage.getItem("@beaba:token");
+      await api.delete(
+        `/functions/${functions.id_funcao}/modules/${moduleId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      setModules(modules.filter((mod) => mod.modulo.id_modulo !== moduleId));
+    } catch (error) {
+      console.error("Erro ao remover módulo:", error);
+      toast.error("Erro ao remover módulo.");
+    }
   };
 
   return (

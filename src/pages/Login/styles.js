@@ -4,8 +4,16 @@ import "../../styles/styled-components.d.ts";
 export const Container = styled.div`
   display: flex;
   width: 100%;
-  /* min-width: 500px;
-  min-height: 412px; */
+  padding: 0 20rem;
+  @media (max-width: ${({ theme }) => theme.DEVICE_BREAKPOINTS.LG}) {
+    padding: 0 10rem;
+  }
+  @media (max-width: ${({ theme }) => theme.DEVICE_BREAKPOINTS.MD}) {
+    padding: 0 6rem;
+  }
+  @media (max-width: ${({ theme }) => theme.DEVICE_BREAKPOINTS.P}) {
+    padding: 0 1rem;
+  }
   padding-bottom: 2rem;
   flex-direction: column;
   justify-content: center;

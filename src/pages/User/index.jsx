@@ -16,12 +16,14 @@ import { EditUserModal } from "../../components/EditUserModal";
 import { DeleteUserModal } from "../../components/DeleteUserModal";
 import { SearchUserForm } from "../../components/SearchUserForm";
 import * as Dialog from "@radix-ui/react-dialog";
+import { toast } from "sonner";
 
 const USERS_PER_PAGE = 5;
 
 export function User() {
-  document.title = `Gestão de usuários`;
-
+  useEffect(() => {
+    document.title = `Gestão de usuários`;
+  }, []);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const modalRef = useRef(null);
 
@@ -32,6 +34,10 @@ export function User() {
   useEffect(() => {
     if (isFormOpen) {
       modalRef?.current.focus();
+      setNomeUsuario("");
+      setEmail("");
+      setSenha("");
+      setPerfilId(2);
     }
   }, [isFormOpen]);
 
@@ -47,15 +53,16 @@ export function User() {
 
   function handleSignUp() {
     if (!nome_usuario || !email || !senha) {
-      return alert("Preencha todos os campos!");
+      toast.error("Preencha todos os campos!");
+      return;
     }
 
     const token = localStorage.getItem("@beaba:token");
     if (!token) {
-      return alert("Token não encontrado. Faça login novamente.");
+      toast.error("Token não encontrado. Faça login novamente.");
+      return;
     }
 
-    // perfil_id
     const userData = { nome_usuario, email, senha, perfil_id };
     console.log("Enviando dados:", userData);
 
@@ -67,7 +74,7 @@ export function User() {
         },
       })
       .then(() => {
-        alert("Usuário cadastrado com sucesso!");
+        toast.success("Usuário cadastrado com sucesso!");
         fetchUsers();
         setNomeUsuario("");
         setEmail("");
@@ -77,15 +84,21 @@ export function User() {
       .catch((error) => {
         if (error.response) {
           console.error("Erro na resposta do servidor:", error.response.data);
-          alert(error.response.data.message || "Erro ao cadastrar usuário");
+          toast.error(
+            error.response.data.message || "Erro ao cadastrar usuário"
+          );
         } else {
           console.error("Erro na requisição:", error.message);
-          alert("Não foi possível cadastrar");
+          toast.error("Não foi possível cadastrar");
         }
       });
   }
 
   useEffect(() => {
+    const storedPage = localStorage.getItem("currentPageUser");
+    if (storedPage) {
+      setCurrentPage(Number(storedPage));
+    }
     fetchPerfis();
     fetchUsers();
   }, []);
@@ -119,14 +132,26 @@ export function User() {
   };
 
   const offset = currentPage * USERS_PER_PAGE;
-  const currentPageUsers = users.slice(offset, offset + USERS_PER_PAGE);
-  const pageCount = Math.ceil(users.length / USERS_PER_PAGE);
+  const currentPageUsers =
+    searchResults.length > 0
+      ? searchResults.slice(offset, offset + USERS_PER_PAGE)
+      : users.slice(offset, offset + USERS_PER_PAGE);
+  const pageCount = Math.ceil(
+    (searchResults.length > 0 ? searchResults.length : users.length) /
+      USERS_PER_PAGE
+  );
 
   const handlePageClick = ({ selected }) => {
     setCurrentPage(selected);
+    localStorage.setItem("currentPageUser", selected);
   };
   const handleDeleteUser = (deletedUserId) => {
     setUsers(users.filter((user) => user.id_usuario !== deletedUserId));
+    if (searchResults.length > 0) {
+      setSearchResults(
+        searchResults.filter((user) => user.id_usuario !== deletedUserId)
+      );
+    }
   };
   const handleEditUser = (editUserId, updatedUser) => {
     setUsers((prevUsers) =>
@@ -134,10 +159,19 @@ export function User() {
         user.id_usuario === editUserId ? { ...user, ...updatedUser } : user
       )
     );
+
+    if (searchResults.length > 0) {
+      setSearchResults((prevResults) =>
+        prevResults.map((user) =>
+          user.id_usuario === editUserId ? { ...user, ...updatedUser } : user
+        )
+      );
+    }
   };
 
   const handleSearchResults = (results) => {
     setSearchResults(results);
+    setCurrentPage(0);
   };
 
   return (
@@ -202,7 +236,12 @@ export function User() {
                 ))}
               </select>
             </div>
-            <Button id="space" title="Cadastrar" onClick={handleSignUp} />
+            <Button
+              id="space"
+              title="Cadastrar"
+              onClick={handleSignUp}
+              aria-label="Cadastrar Usuário"
+            />
           </Form>
         )}
 
@@ -224,79 +263,42 @@ export function User() {
               </tr>
             </thead>
             <tbody>
-              {searchResults.length > 0
-                ? searchResults.map((user) => (
-                    <tr key={user.id_usuario}>
-                      <td>{user.nome_usuario}</td>
-                      <td>{user.email}</td>
-                      <td>
-                        {perfis.find(
-                          (perfil) => perfil.id_perfil === user.perfil_id
-                        )?.nome_perfil || ""}
-                      </td>
-                      <td>
-                        <Dialog.Root>
-                          <Dialog.Trigger asChild>
-                            <button>
-                              <RiEdit2Line size={36} />
-                              Editar
-                            </button>
-                          </Dialog.Trigger>
-                          <EditUserModal user={user} onEdit={handleEditUser} />
-                        </Dialog.Root>
-                      </td>
-                      <td>
-                        <Dialog.Root>
-                          <Dialog.Trigger asChild>
-                            <button>
-                              <RiDeleteBin5Line size={36} />
-                              Excluir
-                            </button>
-                          </Dialog.Trigger>
-                          <DeleteUserModal
-                            user={user}
-                            onDelete={handleDeleteUser}
-                          />
-                        </Dialog.Root>
-                      </td>
-                    </tr>
-                  ))
-                : currentPageUsers.map((user) => (
-                    <tr key={user.id_usuario}>
-                      <td>{user.nome_usuario}</td>
-                      <td>{user.email}</td>
-                      <td>
-                        {perfis.find(
-                          (perfil) => perfil.id_perfil === user.perfil_id
-                        )?.nome_perfil || ""}
-                      </td>
-                      <td>
-                        <Dialog.Root>
-                          <Dialog.Trigger asChild>
-                            <button>
-                              <RiEdit2Line size={36} />
-                              Editar
-                            </button>
-                          </Dialog.Trigger>
-                          <EditUserModal user={user} onEdit={handleEditUser} />
-                        </Dialog.Root>
-                      </td>
-                      <td>
-                        <Dialog.Root>
-                          <Dialog.Trigger asChild>
-                            <button>
-                              <RiDeleteBin5Line size={36} />
-                              Excluir
-                            </button>
-                          </Dialog.Trigger>
-                          <DeleteUserModal
-                            user={user}
-                            onDelete={handleDeleteUser}
-                          />
-                        </Dialog.Root>
-                      </td>
-                    </tr>
-                  ))}
+              {currentPageUsers.map((user) => (
+                <tr key={user.id_usuario}>
+                  <td>{user.nome_usuario}</td>
+                  <td>{user.email}</td>
+                  <td>
+                    {perfis.find(
+                      (perfil) => perfil.id_perfil === user.perfil_id
+                    )?.nome_perfil || ""}
+                  </td>
+                  <td>
+                    <Dialog.Root>
+                      <Dialog.Trigger asChild>
+                        <button>
+                          <RiEdit2Line size={36} />
+                          Editar
+                        </button>
+                      </Dialog.Trigger>
+                      <EditUserModal user={user} onEdit={handleEditUser} />
+                    </Dialog.Root>
+                  </td>
+                  <td>
+                    <Dialog.Root>
+                      <Dialog.Trigger asChild>
+                        <button>
+                          <RiDeleteBin5Line size={36} />
+                          Excluir
+                        </button>
+                      </Dialog.Trigger>
+                      <DeleteUserModal
+                        user={user}
+                        onDelete={handleDeleteUser}
+                      />
+                    </Dialog.Root>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>

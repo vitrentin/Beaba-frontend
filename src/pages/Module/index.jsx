@@ -10,12 +10,14 @@ import { EditModuleModal } from "../../components/EditModuleModal";
 import { DeleteModuleModal } from "../../components/DeleteModuleModal";
 import { SearchModuleForm } from "../../components/SearchModuleForm";
 import * as Dialog from "@radix-ui/react-dialog";
+import { toast } from "sonner";
 
 const MODULES_PER_PAGE = 5;
 
 export function Module() {
-  document.title = `Gestão de módulos`;
-
+  useEffect(() => {
+    document.title = `Gestão de módulos`;
+  }, []);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const modalRef = useRef(null);
 
@@ -26,6 +28,8 @@ export function Module() {
   useEffect(() => {
     if (isFormOpen) {
       modalRef?.current.focus();
+      setNomeModulo("");
+      setDescricaoModulo("");
     }
   }, [isFormOpen]);
 
@@ -38,12 +42,14 @@ export function Module() {
 
   function handleSignUp() {
     if (!nome_modulo) {
-      return alert("Preencha pelo menos o nome do módulo!");
+      toast.error("Preencha pelo menos o nome do módulo!");
+      return;
     }
 
     const token = localStorage.getItem("@beaba:token");
     if (!token) {
-      return alert("Token não encontrado. Faça login novamente.");
+      toast.error("Token não encontrado. Faça login novamente.");
+      return;
     }
 
     const moduleData = { nome_modulo, descricao_modulo };
@@ -57,7 +63,7 @@ export function Module() {
         },
       })
       .then(() => {
-        alert("Módulo cadastrado com sucesso!");
+        toast.success("Módulo cadastrado com sucesso!");
         fetchModules();
         setNomeModulo("");
         setDescricaoModulo("");
@@ -65,14 +71,20 @@ export function Module() {
       .catch((error) => {
         if (error.response) {
           console.error("Erro na resposta do servidor:", error.response.data);
-          alert(error.response.data.message || "Erro ao cadastrar módulo");
+          toast.error(
+            error.response.data.message || "Erro ao cadastrar módulo"
+          );
         } else {
           console.error("Erro na requisição:", error.message);
-          alert("Não foi possível cadastrar");
+          toast.error("Não foi possível cadastrar");
         }
       });
   }
   useEffect(() => {
+    const storedPage = localStorage.getItem("currentPageModule");
+    if (storedPage) {
+      setCurrentPage(Number(storedPage));
+    }
     fetchModules();
   }, []);
   const fetchModules = async () => {
@@ -90,16 +102,28 @@ export function Module() {
     }
   };
   const offset = currentPage * MODULES_PER_PAGE;
-  const currentPageModules = modules.slice(offset, offset + MODULES_PER_PAGE);
-  const pageCount = Math.ceil(modules.length / MODULES_PER_PAGE);
+  const currentPageModules =
+    searchResults.length > 0
+      ? searchResults.slice(offset, offset + MODULES_PER_PAGE)
+      : modules.slice(offset, offset + MODULES_PER_PAGE);
+  const pageCount = Math.ceil(
+    (searchResults.length > 0 ? searchResults.length : modules.length) /
+      MODULES_PER_PAGE
+  );
 
   const handlePageClick = ({ selected }) => {
     setCurrentPage(selected);
+    localStorage.setItem("currentPageModule", selected);
   };
   const handleDeleteModule = (deletedModuleId) => {
     setModules(
       modules.filter((module) => module.id_modulo !== deletedModuleId)
     );
+    if (searchResults.length > 0) {
+      setSearchResults(
+        searchResults.filter((module) => module.id_modulo !== deletedModuleId)
+      );
+    }
   };
   const handleEditModule = (editModuleId, updatedModule) => {
     setModules((prevModules) =>
@@ -109,9 +133,19 @@ export function Module() {
           : module
       )
     );
+    if (searchResults.length > 0) {
+      setSearchResults((prevResults) =>
+        prevResults.map((module) =>
+          module.id_modulo === editModuleId
+            ? { ...module, ...updatedModule }
+            : module
+        )
+      );
+    }
   };
   const handleSearchResults = (results) => {
     setSearchResults(results);
+    setCurrentPage(0);
   };
 
   return (
@@ -149,7 +183,12 @@ export function Module() {
                 onChange={(event) => setDescricaoModulo(event.target.value)}
               />
             </div>
-            <Button id="space" title="Cadastrar" onClick={handleSignUp} />
+            <Button
+              id="space"
+              title="Cadastrar"
+              onClick={handleSignUp}
+              aria-label="Cadastrar Módulo"
+            />
           </Form>
         )}
 
@@ -169,75 +208,40 @@ export function Module() {
               </tr>
             </thead>
             <tbody>
-              {searchResults.length > 0
-                ? searchResults.map((module) => (
-                    <tr key={module.id_modulo}>
-                      <td>{module.nome_modulo}</td>
-                      <td>{module.descricao_modulo}</td>
-                      <td>
-                        <Dialog.Root>
-                          <Dialog.Trigger asChild>
-                            <button>
-                              <RiEdit2Line size={36} />
-                              Editar
-                            </button>
-                          </Dialog.Trigger>
-                          <EditModuleModal
-                            module={module}
-                            onEdit={handleEditModule}
-                          />
-                        </Dialog.Root>
-                      </td>
-                      <td>
-                        <Dialog.Root>
-                          <Dialog.Trigger asChild>
-                            <button>
-                              <RiDeleteBin5Line size={36} />
-                              Excluir
-                            </button>
-                          </Dialog.Trigger>
-                          <DeleteModuleModal
-                            module={module}
-                            onDelete={handleDeleteModule}
-                          />
-                        </Dialog.Root>
-                      </td>
-                    </tr>
-                  ))
-                : currentPageModules.map((module) => (
-                    <tr key={module.id_modulo}>
-                      <td>{module.nome_modulo}</td>
-                      <td>{module.descricao_modulo}</td>
-                      <td>
-                        <Dialog.Root>
-                          <Dialog.Trigger asChild>
-                            <button>
-                              <RiEdit2Line size={36} />
-                              Editar
-                            </button>
-                          </Dialog.Trigger>
-                          <EditModuleModal
-                            module={module}
-                            onEdit={handleEditModule}
-                          />
-                        </Dialog.Root>
-                      </td>
-                      <td>
-                        <Dialog.Root>
-                          <Dialog.Trigger asChild>
-                            <button>
-                              <RiDeleteBin5Line size={36} />
-                              Excluir
-                            </button>
-                          </Dialog.Trigger>
-                          <DeleteModuleModal
-                            module={module}
-                            onDelete={handleDeleteModule}
-                          />
-                        </Dialog.Root>
-                      </td>
-                    </tr>
-                  ))}
+              {currentPageModules.map((module) => (
+                <tr key={module.id_modulo}>
+                  <td>{module.nome_modulo}</td>
+                  <td>{module.descricao_modulo}</td>
+                  <td>
+                    <Dialog.Root>
+                      <Dialog.Trigger asChild>
+                        <button>
+                          <RiEdit2Line size={36} />
+                          Editar
+                        </button>
+                      </Dialog.Trigger>
+                      <EditModuleModal
+                        module={module}
+                        onEdit={handleEditModule}
+                      />
+                    </Dialog.Root>
+                  </td>
+                  <td>
+                    <Dialog.Root>
+                      <Dialog.Trigger asChild>
+                        <button>
+                          <RiDeleteBin5Line size={36} />
+                          Excluir
+                        </button>
+                      </Dialog.Trigger>
+                      <DeleteModuleModal
+                        module={module}
+                        onDelete={handleDeleteModule}
+                      />
+                    </Dialog.Root>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>

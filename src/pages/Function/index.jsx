@@ -10,25 +10,16 @@ import { EditFunctionModal } from "../../components/EditFunctionModal";
 import { DeleteFunctionModal } from "../../components/DeleteFunctionModal";
 import { SearchFunctionForm } from "../../components/SearchFunctionForm";
 import * as Dialog from "@radix-ui/react-dialog";
+import { toast } from "sonner";
 
 const FUNCTIONS_PER_PAGE = 5;
 
 export function Function() {
-  document.title = `Gestão de funções`;
-
+  useEffect(() => {
+    document.title = `Gestão de funções`;
+  }, []);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const modalRef = useRef(null);
-
-  function handleFormOpen() {
-    setIsFormOpen(!isFormOpen);
-  }
-
-  useEffect(() => {
-    if (isFormOpen) {
-      modalRef?.current.focus();
-    }
-  }, [isFormOpen]);
-
   const [nome_funcao, setNomeFuncao] = useState("");
   const [descricao_funcao, setDescricaoFuncao] = useState("");
   const [nome_modulo_associado, setNomeModuloAssociado] = useState("");
@@ -36,15 +27,29 @@ export function Function() {
   const [functions, setFunctions] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [searchResults, setSearchResults] = useState([]);
+  function handleFormOpen() {
+    setIsFormOpen(!isFormOpen);
+  }
+
+  useEffect(() => {
+    if (isFormOpen) {
+      modalRef?.current.focus();
+      setNomeFuncao("");
+      setDescricaoFuncao("");
+      setNomeModuloAssociado("");
+    }
+  }, [isFormOpen]);
 
   function handleSignUp() {
     if (!nome_funcao) {
-      return alert("Preencha pelo menos o nome da função!");
+      toast.error("Preencha pelo menos o nome da função!");
+      return;
     }
 
     const token = localStorage.getItem("@beaba:token");
     if (!token) {
-      return alert("Token não encontrado. Faça login novamente.");
+      toast.error("Token não encontrado. Faça login novamente.");
+      return;
     }
 
     const functionData = {
@@ -62,27 +67,31 @@ export function Function() {
         },
       })
       .then(() => {
-        alert("Função cadastrada e/ou módulo associado com sucesso!");
+        toast.success("Função cadastrada e/ou módulo associado com sucesso!");
         fetchFunctions();
         // setNomeFuncao("");
-        // setDescricaoFuncao("");
+        setDescricaoFuncao("");
         setNomeModuloAssociado("");
       })
       .catch((error) => {
         if (error.response) {
           console.error("Erro na resposta do servidor:", error.response.data);
-          alert(
+          toast.error(
             error.response.data.message ||
               "Erro ao cadastrar função e/ou associar módulo"
           );
         } else {
           console.error("Erro na requisição:", error.message);
-          alert("Não foi possível cadastrar e/ou associar");
+          toast.error("Não foi possível cadastrar e/ou associar");
         }
       });
   }
 
   useEffect(() => {
+    const storedPage = localStorage.getItem("currentPageFunction");
+    if (storedPage) {
+      setCurrentPage(Number(storedPage));
+    }
     fetchFunctions();
   }, []);
 
@@ -102,20 +111,33 @@ export function Function() {
   };
 
   const offset = currentPage * FUNCTIONS_PER_PAGE;
-  const currentPageFunctions = functions.slice(
-    offset,
-    offset + FUNCTIONS_PER_PAGE
+  const currentPageFunctions =
+    searchResults.length > 0
+      ? searchResults.slice(offset, offset + FUNCTIONS_PER_PAGE)
+      : functions.slice(offset, offset + FUNCTIONS_PER_PAGE);
+  const pageCount = Math.ceil(
+    (searchResults.length > 0 ? searchResults.length : functions.length) /
+      FUNCTIONS_PER_PAGE
   );
-  const pageCount = Math.ceil(functions.length / FUNCTIONS_PER_PAGE);
 
   const handlePageClick = ({ selected }) => {
     setCurrentPage(selected);
+    localStorage.setItem("currentPageFunction", selected);
   };
+
   const handleDeleteFunction = (deletedFunctionId) => {
     setFunctions(
       functions.filter((functions) => functions.id_funcao !== deletedFunctionId)
     );
+    if (searchResults.length > 0) {
+      setSearchResults(
+        searchResults.filter(
+          (functions) => functions.id_funcao !== deletedFunctionId
+        )
+      );
+    }
   };
+
   const handleEditFunction = (editFunctionId, updatedFunction) => {
     setFunctions((prevFunctions) =>
       prevFunctions.map((functions) =>
@@ -124,9 +146,37 @@ export function Function() {
           : functions
       )
     );
+    if (searchResults.length > 0) {
+      setSearchResults((prevResults) =>
+        prevResults.map((functions) =>
+          functions.id_funcao === editFunctionId
+            ? { ...functions, ...updatedFunction }
+            : functions
+        )
+      );
+    }
+  };
+  const handleModulesUpdate = (functionId, updatedModules) => {
+    setFunctions((prevFunctions) =>
+      prevFunctions.map((functions) =>
+        functions.id_funcao === functionId
+          ? { ...functions, funcao_modulo: updatedModules }
+          : functions
+      )
+    );
+    if (searchResults.length > 0) {
+      setSearchResults((prevResults) =>
+        prevResults.map((functions) =>
+          functions.id_funcao === functionId
+            ? { ...functions, funcao_modulo: updatedModules }
+            : functions
+        )
+      );
+    }
   };
   const handleSearchResults = (results) => {
     setSearchResults(results);
+    setCurrentPage(0);
   };
 
   return (
@@ -173,7 +223,12 @@ export function Function() {
                 onChange={(event) => setNomeModuloAssociado(event.target.value)}
               />
             </div>
-            <Button id="space" title="Cadastrar" onClick={handleSignUp} />
+            <Button
+              id="space"
+              title="Cadastrar"
+              onClick={handleSignUp}
+              aria-label="Cadastrar Função"
+            />
           </Form>
         )}
 
@@ -194,82 +249,48 @@ export function Function() {
               </tr>
             </thead>
             <tbody>
-              {searchResults.length > 0
-                ? searchResults.map((functions) => (
-                    <tr key={functions.id_funcao}>
-                      <td>{functions.nome_funcao}</td>
-                      <td>{functions.descricao_funcao}</td>
-
-                      <td>
-                        {functions.funcao_modulo
+              {currentPageFunctions.map((functions) => (
+                <tr key={functions.id_funcao}>
+                  <td>{functions.nome_funcao}</td>
+                  <td>{functions.descricao_funcao}</td>
+                  <td>
+                    {functions.funcao_modulo
+                      ? functions.funcao_modulo
                           .map((modulo) => modulo.modulo.nome_modulo)
-                          .join(", ")}
-                      </td>
-                      <td>
-                        <Dialog.Root>
-                          <Dialog.Trigger asChild>
-                            <button>
-                              <RiEdit2Line size={36} />
-                              Editar
-                            </button>
-                          </Dialog.Trigger>
-                          <EditFunctionModal
-                            functions={functions}
-                            onEdit={handleEditFunction}
-                          />
-                        </Dialog.Root>
-                      </td>
-                      <td>
-                        <Dialog.Root>
-                          <Dialog.Trigger asChild>
-                            <button>
-                              <RiDeleteBin5Line size={36} />
-                              Excluir
-                            </button>
-                          </Dialog.Trigger>
-                          <DeleteFunctionModal
-                            functions={functions}
-                            onDelete={handleDeleteFunction}
-                          />
-                        </Dialog.Root>
-                      </td>
-                    </tr>
-                  ))
-                : currentPageFunctions.map((functions) => (
-                    <tr key={functions.id_funcao}>
-                      <td>{functions.nome_funcao}</td>
-                      <td>{functions.descricao_funcao}</td>
-                      <td>{functions.modules}</td>
-                      <td>
-                        <Dialog.Root>
-                          <Dialog.Trigger asChild>
-                            <button>
-                              <RiEdit2Line size={36} />
-                              Editar
-                            </button>
-                          </Dialog.Trigger>
-                          <EditFunctionModal
-                            functions={functions}
-                            onEdit={handleEditFunction}
-                          />
-                        </Dialog.Root>
-                      </td>
-                      <td>
-                        <Dialog.Root>
-                          <Dialog.Trigger asChild>
-                            <button>
-                              <RiDeleteBin5Line size={36} />
-                              Excluir
-                            </button>
-                          </Dialog.Trigger>
-                          <DeleteFunctionModal
-                            functions={functions}
-                            onDelete={handleDeleteFunction}
-                          />
-                        </Dialog.Root>
-                      </td>
-                    </tr>
-                  ))}
+                          .join(", ")
+                      : functions.modules}
+                  </td>
+                  <td>
+                    <Dialog.Root>
+                      <Dialog.Trigger asChild>
+                        <button>
+                          <RiEdit2Line size={36} />
+                          Editar
+                        </button>
+                      </Dialog.Trigger>
+                      <EditFunctionModal
+                        functions={functions}
+                        onEdit={handleEditFunction}
+                        onModulesUpdate={handleModulesUpdate}
+                      />
+                    </Dialog.Root>
+                  </td>
+                  <td>
+                    <Dialog.Root>
+                      <Dialog.Trigger asChild>
+                        <button>
+                          <RiDeleteBin5Line size={36} />
+                          Excluir
+                        </button>
+                      </Dialog.Trigger>
+                      <DeleteFunctionModal
+                        functions={functions}
+                        onDelete={handleDeleteFunction}
+                      />
+                    </Dialog.Root>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>

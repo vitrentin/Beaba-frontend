@@ -10,25 +10,16 @@ import { EditTransactionModal } from "../../components/EditTransactionModal";
 import { DeleteTransactionModal } from "../../components/DeleteTransactionModal";
 import { SearchTransactionForm } from "../../components/SearchTransactionForm";
 import * as Dialog from "@radix-ui/react-dialog";
+import { toast } from "sonner";
 
 const TRANSACTIONS_PER_PAGE = 5;
 
 export function Transaction() {
-  document.title = `Gestão de transações`;
-
+  useEffect(() => {
+    document.title = `Gestão de transações`;
+  }, []);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const modalRef = useRef(null);
-
-  function handleFormOpen() {
-    setIsFormOpen(!isFormOpen);
-  }
-
-  useEffect(() => {
-    if (isFormOpen) {
-      modalRef?.current.focus();
-    }
-  }, [isFormOpen]);
-
   const [nome_transacao, setNomeTransacao] = useState("");
   const [descricao_transacao, setDescricaoTransacao] = useState("");
   const [nome_modulo_associado, setNomeModuloAssociado] = useState("");
@@ -37,14 +28,29 @@ export function Transaction() {
   const [currentPage, setCurrentPage] = useState(0);
   const [searchResults, setSearchResults] = useState([]);
 
+  function handleFormOpen() {
+    setIsFormOpen(!isFormOpen);
+  }
+
+  useEffect(() => {
+    if (isFormOpen) {
+      modalRef?.current.focus();
+      setNomeTransacao("");
+      setDescricaoTransacao("");
+      setNomeModuloAssociado("");
+    }
+  }, [isFormOpen]);
+
   function handleSignUp() {
     if (!nome_transacao) {
-      return alert("Preencha pelo menos o nome da transação!");
+      toast.error("Preencha pelo menos o nome da transação!");
+      return;
     }
 
     const token = localStorage.getItem("@beaba:token");
     if (!token) {
-      return alert("Token não encontrado. Faça login novamente.");
+      toast.error("Token não encontrado. Faça login novamente.");
+      return;
     }
 
     const transactionData = {
@@ -62,29 +68,34 @@ export function Transaction() {
         },
       })
       .then(() => {
-        alert(
+        toast.success(
           "Transação cadastrada com sucesso e/ou módulo associado com sucesso!"
         );
+
         fetchTransactions();
         // setNomeTransacao("");
-        // setDescricaoTransacao("");
+        setDescricaoTransacao("");
         setNomeModuloAssociado("");
       })
       .catch((error) => {
         if (error.response) {
           console.error("Erro na resposta do servidor:", error.response.data);
-          alert(
+          toast.error(
             error.response.data.message ||
               "Erro ao cadastrar transação e/ou associar módulo"
           );
         } else {
           console.error("Erro na requisição:", error.message);
-          alert("Não foi possível cadastrar e/ou associar");
+          toast.error("Não foi possível cadastrar e/ou associar");
         }
       });
   }
 
   useEffect(() => {
+    const storedPage = localStorage.getItem("currentPageTransaction");
+    if (storedPage) {
+      setCurrentPage(Number(storedPage));
+    }
     fetchTransactions();
   }, []);
 
@@ -104,14 +115,18 @@ export function Transaction() {
   };
 
   const offset = currentPage * TRANSACTIONS_PER_PAGE;
-  const currentPageTransactions = transactions.slice(
-    offset,
-    offset + TRANSACTIONS_PER_PAGE
+  const currentPageTransactions =
+    searchResults.length > 0
+      ? searchResults.slice(offset, offset + TRANSACTIONS_PER_PAGE)
+      : transactions.slice(offset, offset + TRANSACTIONS_PER_PAGE);
+  const pageCount = Math.ceil(
+    (searchResults.length > 0 ? searchResults.length : transactions.length) /
+      TRANSACTIONS_PER_PAGE
   );
-  const pageCount = Math.ceil(transactions.length / TRANSACTIONS_PER_PAGE);
 
   const handlePageClick = ({ selected }) => {
     setCurrentPage(selected);
+    localStorage.setItem("currentPageTransaction", selected);
   };
   const handleDeleteTransaction = (deletedTransactionId) => {
     setTransactions(
@@ -119,6 +134,13 @@ export function Transaction() {
         (transaction) => transaction.id_transacao !== deletedTransactionId
       )
     );
+    if (searchResults.length > 0) {
+      setSearchResults(
+        searchResults.filter(
+          (transaction) => transaction.id_transacao !== deletedTransactionId
+        )
+      );
+    }
   };
   const handleEditTransaction = (editTransactionId, updatedTransaction) => {
     setTransactions((prevTransactions) =>
@@ -128,9 +150,37 @@ export function Transaction() {
           : transaction
       )
     );
+    if (searchResults.length > 0) {
+      setSearchResults((prevResults) =>
+        prevResults.map((transaction) =>
+          transaction.id_transacao === editTransactionId
+            ? { ...transaction, ...updatedTransaction }
+            : transaction
+        )
+      );
+    }
+  };
+  const handleModulesUpdate = (transactionId, updatedModules) => {
+    setTransactions((prevTransactions) =>
+      prevTransactions.map((transaction) =>
+        transaction.id_transacao === transactionId
+          ? { ...transaction, transacao_modulo: updatedModules }
+          : transaction
+      )
+    );
+    if (searchResults.length > 0) {
+      setSearchResults((prevResults) =>
+        prevResults.map((transaction) =>
+          transaction.id_transacao === transactionId
+            ? { ...transaction, transacao_modulo: updatedModules }
+            : transaction
+        )
+      );
+    }
   };
   const handleSearchResults = (results) => {
     setSearchResults(results);
+    setCurrentPage(0);
   };
 
   return (
@@ -179,7 +229,12 @@ export function Transaction() {
                 onChange={(event) => setNomeModuloAssociado(event.target.value)}
               />
             </div>
-            <Button id="space" title="Cadastrar" onClick={handleSignUp} />
+            <Button
+              id="space"
+              title="Cadastrar"
+              onClick={handleSignUp}
+              aria-label="Cadastrar Transação"
+            />
           </Form>
         )}
 
@@ -200,82 +255,47 @@ export function Transaction() {
               </tr>
             </thead>
             <tbody>
-              {searchResults.length > 0
-                ? searchResults.map((transaction) => (
-                    <tr key={transaction.id_transacao}>
-                      <td>{transaction.nome_transacao}</td>
-                      <td>{transaction.descricao_transacao}</td>
+              {currentPageTransactions.map((transaction) => (
+                <tr key={transaction.id_transacao}>
+                  <td>{transaction.nome_transacao}</td>
+                  <td>{transaction.descricao_transacao}</td>
 
-                      <td>
-                        {transaction.transacao_modulo
-                          .map((modulo) => modulo.modulo.nome_modulo)
-                          .join(", ")}
-                      </td>
-                      <td>
-                        <Dialog.Root>
-                          <Dialog.Trigger asChild>
-                            <button>
-                              <RiEdit2Line size={36} />
-                              Editar
-                            </button>
-                          </Dialog.Trigger>
-                          <EditTransactionModal
-                            transaction={transaction}
-                            onEdit={handleEditTransaction}
-                          />
-                        </Dialog.Root>
-                      </td>
-                      <td>
-                        <Dialog.Root>
-                          <Dialog.Trigger asChild>
-                            <button>
-                              <RiDeleteBin5Line size={36} />
-                              Excluir
-                            </button>
-                          </Dialog.Trigger>
-                          <DeleteTransactionModal
-                            transaction={transaction}
-                            onDelete={handleDeleteTransaction}
-                          />
-                        </Dialog.Root>
-                      </td>
-                    </tr>
-                  ))
-                : currentPageTransactions.map((transaction) => (
-                    <tr key={transaction.id_transacao}>
-                      <td>{transaction.nome_transacao}</td>
-                      <td>{transaction.descricao_transacao}</td>
-                      <td>{transaction.modules}</td>
-                      <td>
-                        <Dialog.Root>
-                          <Dialog.Trigger asChild>
-                            <button>
-                              <RiEdit2Line size={36} />
-                              Editar
-                            </button>
-                          </Dialog.Trigger>
-                          <EditTransactionModal
-                            transaction={transaction}
-                            onEdit={handleEditTransaction}
-                          />
-                        </Dialog.Root>
-                      </td>
-                      <td>
-                        <Dialog.Root>
-                          <Dialog.Trigger asChild>
-                            <button>
-                              <RiDeleteBin5Line size={36} />
-                              Excluir
-                            </button>
-                          </Dialog.Trigger>
-                          <DeleteTransactionModal
-                            transaction={transaction}
-                            onDelete={handleDeleteTransaction}
-                          />
-                        </Dialog.Root>
-                      </td>
-                    </tr>
-                  ))}
+                  <td>
+                    {transaction.transacao_modulo
+                      .map((modulo) => modulo.modulo.nome_modulo)
+                      .join(", ")}
+                  </td>
+                  <td>
+                    <Dialog.Root>
+                      <Dialog.Trigger asChild>
+                        <button>
+                          <RiEdit2Line size={36} />
+                          Editar
+                        </button>
+                      </Dialog.Trigger>
+                      <EditTransactionModal
+                        transaction={transaction}
+                        onEdit={handleEditTransaction}
+                        onModulesUpdate={handleModulesUpdate}
+                      />
+                    </Dialog.Root>
+                  </td>
+                  <td>
+                    <Dialog.Root>
+                      <Dialog.Trigger asChild>
+                        <button>
+                          <RiDeleteBin5Line size={36} />
+                          Excluir
+                        </button>
+                      </Dialog.Trigger>
+                      <DeleteTransactionModal
+                        transaction={transaction}
+                        onDelete={handleDeleteTransaction}
+                      />
+                    </Dialog.Root>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>

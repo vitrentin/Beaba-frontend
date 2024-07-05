@@ -15,8 +15,6 @@ export default createGlobalStyle`
   * {
   margin: 0;
   padding: 0;
-
-   
   }
  :focus{
       outline: 0;
@@ -54,7 +52,7 @@ export default createGlobalStyle`
   button:hover, a:hover{
     filter: brightness(0.9);
   }
-  
+
   ::-webkit-scrollbar {
     width: 0.5rem;
   }
@@ -66,4 +64,6 @@ export default createGlobalStyle`
   ::-webkit-scrollbar-thumb {
     background-color: #09090A;
   }
+
+  
 `;

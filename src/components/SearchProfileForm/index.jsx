@@ -3,6 +3,7 @@ import { MagnifyingGlass } from "phosphor-react";
 import { SearchFormContainer } from "./styles";
 import { useState } from "react";
 import { searchProfiles } from "../../services/api";
+import { toast } from "sonner";
 
 export function SearchProfileForm({ onSearchResults, fetchProfiles }) {
   const [searchProfile, setSearchProfile] = useState("");
@@ -20,13 +21,15 @@ export function SearchProfileForm({ onSearchResults, fetchProfiles }) {
         onSearchResults(results);
 
         if (results.length === 0) {
-          alert("Nenhum perfil encontrado com esse nome.");
+          toast.error("Nenhum perfil encontrado com esse nome.");
           onSearchResults([]);
         }
       }
     } catch (error) {
       console.error("Erro ao buscar perfis:", error);
-      alert("Erro ao buscar perfis. Por favor, tente novamente mais tarde.");
+      toast.error(
+        "Erro ao buscar perfis. Por favor, tente novamente mais tarde."
+      );
     }
   };
 

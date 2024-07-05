@@ -8,16 +8,19 @@ import { Input } from "../Input";
 import { useState, useEffect } from "react";
 import { api } from "../../services/api";
 import { Tag } from "../Tag";
+import { toast } from "sonner";
 
-export function EditProfileModal({ profile, onEdit }) {
+export function EditProfileModal({ profile, onEdit, onModulesUpdate }) {
   const [nomePerfil, setNomePerfil] = useState("");
   const [modules, setModules] = useState([]);
+  const [removedModules, setRemovedModules] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     if (profile) {
       setNomePerfil(profile.nome_perfil || "");
       setModules(profile.perfil_modulo || []);
+      setRemovedModules([]);
     }
   }, [profile]);
 
@@ -30,19 +33,34 @@ export function EditProfileModal({ profile, onEdit }) {
 
     try {
       const token = localStorage.getItem("@beaba:token");
-      const response = await api.put(
-        `/profiles/${profile.id_perfil}`,
-        updatedFields,
-        {
+      // Update profile name if changed
+      if (nomePerfil !== profile.nome_perfil) {
+        await api.put(`/profiles/${profile.id_perfil}`, updatedFields, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-        }
+        });
+      }
+
+      // Remove modules
+      await Promise.all(
+        removedModules.map((moduleId) =>
+          api.delete(`/profiles/${profile.id_perfil}/modules/${moduleId}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          })
+        )
       );
-      console.log("Response: ", response.data);
+
       onEdit(profile.id_perfil, updatedFields);
-      alert("Perfil editado com sucesso!");
+      onModulesUpdate(profile.id_perfil, modules);
+      toast.success("Perfil editado com sucesso!");
+
+      // Clear removed modules list after successful edit
+      setRemovedModules([]);
     } catch (error) {
       console.error("Erro ao editar perfil:", error);
       if (error.response) {
@@ -50,32 +68,26 @@ export function EditProfileModal({ profile, onEdit }) {
           error.response.status === 400 &&
           error.response.data.error === "Profile already in use"
         ) {
-          alert("Perfil já está em uso. Por favor, use um nome diferente.");
+          toast.error(
+            "Perfil já está em uso. Por favor, use um nome diferente."
+          );
           setNomePerfil(profile.nome_perfil);
         } else {
-          alert("Erro ao editar perfil.");
+          toast.error("Erro ao editar perfil.");
           setNomePerfil(profile.nome_perfil);
         }
       } else {
-        alert("Erro ao editar perfil.");
+        toast.error("Erro ao editar perfil.");
         setNomePerfil(profile.nome_perfil);
       }
     }
   };
-  const handleRemoveModule = async (moduleId) => {
-    try {
-      const token = localStorage.getItem("@beaba:token");
-      await api.delete(`/profiles/${profile.id_perfil}/modules/${moduleId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-      setModules(modules.filter((mod) => mod.modulo.id_modulo !== moduleId));
-    } catch (error) {
-      console.error("Erro ao remover módulo:", error);
-      alert("Erro ao remover módulo.");
-    }
+
+  const handleRemoveModule = (moduleId) => {
+    setRemovedModules((prev) => [...prev, moduleId]);
+    setModules((prev) =>
+      prev.filter((mod) => mod.modulo.id_modulo !== moduleId)
+    );
   };
 
   return (

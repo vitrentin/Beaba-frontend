@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FiLock } from "react-icons/fi";
 import { RiArrowLeftLine } from "react-icons/ri";
 import { Input } from "../../components/Input";
@@ -6,10 +6,12 @@ import { Container, Form } from "./styles";
 import Logo from "../../assets/verdeCardImage.svg";
 import { useNavigate, useLocation } from "react-router-dom";
 import { api } from "../../services/api";
-
-document.title = `Reset Password`;
+import { toast } from "sonner";
 
 export function ResetPassword() {
+  useEffect(() => {
+    document.title = `Redefinir senha`;
+  }, []);
   const navigate = useNavigate();
   const location = useLocation();
   const [senha, setSenha] = useState("");
@@ -23,7 +25,9 @@ export function ResetPassword() {
     event.preventDefault();
 
     if (senha !== confirmarSenha) {
-      alert("As senhas não coincidem. Por favor, verifique e tente novamente.");
+      toast.error(
+        "As senhas não coincidem. Por favor, verifique e tente novamente."
+      );
       return;
     }
 
@@ -35,14 +39,16 @@ export function ResetPassword() {
       });
 
       if (response.status === 200) {
-        alert("Senha redefinida com sucesso!");
+        toast.success("Senha redefinida com sucesso!");
         navigate("/");
       } else {
-        alert(`Erro ao redefinir senha: ${response.data.error}`);
+        toast.error(`Erro ao redefinir senha: ${response.data.error}`);
       }
     } catch (error) {
       console.error("Erro ao redefinir senha:", error);
-      alert("Erro ao redefinir senha. Por favor, tente novamente mais tarde.");
+      toast.error(
+        "Erro ao redefinir senha. Por favor, tente novamente mais tarde."
+      );
     }
   };
 

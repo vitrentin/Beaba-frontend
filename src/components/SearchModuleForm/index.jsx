@@ -3,6 +3,7 @@ import { MagnifyingGlass } from "phosphor-react";
 import { SearchFormContainer } from "./styles";
 import { useState } from "react";
 import { searchModules } from "../../services/api";
+import { toast } from "sonner";
 
 export function SearchModuleForm({ onSearchResults, fetchModules }) {
   const [searchModule, setSearchModule] = useState("");
@@ -20,13 +21,15 @@ export function SearchModuleForm({ onSearchResults, fetchModules }) {
         onSearchResults(results);
 
         if (results.length === 0) {
-          alert("Nenhum módulo encontrado com esse nome ou descrição.");
+          toast.error("Nenhum módulo encontrado com esse nome ou descrição.");
           onSearchResults([]);
         }
       }
     } catch (error) {
       console.error("Erro ao buscar módulo:", error);
-      alert("Erro ao buscar módulos. Por favor, tente novamente mais tarde.");
+      toast.error(
+        "Erro ao buscar módulos. Por favor, tente novamente mais tarde."
+      );
     }
   };
 

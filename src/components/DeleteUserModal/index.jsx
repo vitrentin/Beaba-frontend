@@ -3,6 +3,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { RiCloseFill } from "react-icons/ri";
 import { CloseButton, Content, Overlay } from "./styles";
 import { api } from "../../services/api";
+import { toast } from "sonner";
 export function DeleteUserModal({ user, onDelete }) {
   const handleDelete = async () => {
     try {
@@ -14,10 +15,10 @@ export function DeleteUserModal({ user, onDelete }) {
         },
       });
       onDelete(user.id_usuario);
-      alert("Usuário excluído com sucesso!");
+      toast.success("Usuário excluído com sucesso!");
     } catch (error) {
       console.error("Erro ao deletar usuário:", error);
-      alert("Erro ao excluir usuário");
+      toast.error("Erro ao excluir usuário");
     }
   };
   return (

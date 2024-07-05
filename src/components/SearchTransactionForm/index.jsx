@@ -3,6 +3,7 @@ import { MagnifyingGlass } from "phosphor-react";
 import { SearchFormContainer } from "./styles";
 import { useState } from "react";
 import { searchTransactions } from "../../services/api";
+import { toast } from "sonner";
 
 export function SearchTransactionForm({ onSearchResults, fetchTransactions }) {
   const [searchTransaction, setSearchTransaction] = useState("");
@@ -20,13 +21,15 @@ export function SearchTransactionForm({ onSearchResults, fetchTransactions }) {
         onSearchResults(results);
 
         if (results.length === 0) {
-          alert("Nenhuma transação encontrada com esse nome ou descrição.");
+          toast.error(
+            "Nenhuma transação encontrada com esse nome ou descrição."
+          );
           onSearchResults([]);
         }
       }
     } catch (error) {
       console.error("Erro ao buscar transação:", error);
-      alert(
+      toast.error(
         "Erro ao buscar transações. Por favor, tente novamente mais tarde."
       );
     }

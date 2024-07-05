@@ -9,6 +9,7 @@ import { Container, Form } from "./styles";
 import Logo from "../../assets/verdeCardImage.svg";
 import { EsqueciMinhaSenha } from "../../components/EsqueciMinhaSenhaModal";
 import * as Dialog from "@radix-ui/react-dialog";
+import { toast } from "sonner";
 
 export function Login() {
   useEffect(() => {
@@ -20,7 +21,22 @@ export function Login() {
   const { signIn } = useAuth();
 
   function handleSignIn() {
+    if (!email) {
+      toast.error("Por favor, insira o seu email.");
+      return;
+    }
+    if (!senha) {
+      toast.error("Por favor, insira a sua senha.");
+      return;
+    }
     signIn({ email, senha });
+    /* toast.success("Login concluído.", {
+     action: {
+      label: 'Reenviar',
+      onClick: ()=> {},
+      }
+    });
+  */
   }
 
   return (
